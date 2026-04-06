@@ -1,0 +1,4 @@
+.streamlit/
+*.db
+photos/
+__pycache__/
