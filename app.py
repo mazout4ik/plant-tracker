@@ -18,8 +18,6 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 page = st.sidebar.selectbox("Choose page", ["Overview", "Plant Details", "Add Plant"])
 if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
-if "mode" not in st.session_state:
-    st.session_state.mode = "view"
 
 # ---------- Overview ----------
 if page == "Overview":
@@ -37,11 +35,11 @@ if page == "Overview":
         st.error(f"Error loading plants: {e}")
         plants = []
 
-     if not plants:
+    if not plants:
         st.info("No plants yet. Add one on the 'Add Plant' page.")
     else:
         for p in plants:
-            col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
+            col1, col2 = st.columns([3, 1])
             with col1:
                 st.write(
                     f"**{p['name']}** - Last watered: {p['last_watered'] or 'Never'}"
@@ -49,7 +47,7 @@ if page == "Overview":
             with col2:
                 if st.button("View", key=f"view_{p['id']}"):
                     st.session_state.selected_id = p["id"]
-                    st.experimental_rerun()
+                    st.rerun()
 
 # ---------- Add Plant ----------
 elif page == "Add Plant":
@@ -130,24 +128,13 @@ elif page == "Plant Details":
 
     plant = rows[0]
 
-    mode = st.session_state.get("mode", "view")
-
     col1, col2 = st.columns(2)
 
-    # ----- LEFT: text fields -----
     with col1:
-        if mode == "edit":
-            new_name = st.text_input("Name", value=plant["name"])
-            new_desc = st.text_area(
-                "Description", value=plant.get("description") or "", height=100
-            )
-        else:
-            st.subheader(plant["name"])
-            st.write(f"**Description:** {plant.get('description') or 'No description'}")
-
+        st.subheader(plant["name"])
+        st.write(f"**Description:** {plant.get('description') or 'No description'}")
         st.write(f"**Last watered:** {plant.get('last_watered') or 'Never'}")
 
-    # ----- RIGHT: photo -----
     with col2:
         photo_path = plant.get("photo_path")
         if photo_path:
@@ -155,6 +142,7 @@ elif page == "Plant Details":
                 public_url_data = supabase.storage.from_(BUCKET).get_public_url(
                     photo_path
                 )
+
                 if isinstance(public_url_data, dict) and "publicUrl" in public_url_data:
                     photo_url = public_url_data["publicUrl"]
                 elif hasattr(public_url_data, "data") and isinstance(
@@ -173,16 +161,6 @@ elif page == "Plant Details":
         else:
             st.write("❌ No photo.")
 
-        # Optional: allow replacing photo in edit mode
-        if mode == "edit":
-            new_file = st.file_uploader(
-                "Replace photo (optional)", type=["jpg", "jpeg", "png"], key="edit_photo"
-            )
-            if new_file is not None:
-                # We only save on Save Changes below
-                pass
-
-    # ----- Watering date (common) -----
     new_date = st.date_input(
         "Next watering date",
         value=datetime.now().date(),
@@ -194,10 +172,10 @@ elif page == "Plant Details":
                 {"last_watered": str(new_date)}
             ).eq("id", plant["id"]).execute()
             st.success("Watering date updated!")
-            st.experimental_rerun()
+            st.rerun()
         except Exception as e:
             st.error(f"Error updating watering date: {e}")
 
     if st.button("← Back to Overview", use_container_width=True):
         st.session_state.selected_id = None
-        st.experimental_rerun()
+        st.rerun()
