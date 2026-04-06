@@ -18,6 +18,8 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 page = st.sidebar.selectbox("Choose page", ["Overview", "Plant Details", "Add Plant"])
 if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
+if "mode" not in st.session_state:
+    st.session_state.mode = "view"
 
 # ---------- Overview ----------
 if page == "Overview":
@@ -35,11 +37,11 @@ if page == "Overview":
         st.error(f"Error loading plants: {e}")
         plants = []
 
-    if not plants:
+     if not plants:
         st.info("No plants yet. Add one on the 'Add Plant' page.")
     else:
         for p in plants:
-            col1, col2 = st.columns([3, 1])
+            col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
             with col1:
                 st.write(
                     f"**{p['name']}** - Last watered: {p['last_watered'] or 'Never'}"
@@ -47,6 +49,17 @@ if page == "Overview":
             with col2:
                 if st.button("View", key=f"view_{p['id']}"):
                     st.session_state.selected_id = p["id"]
+                    st.session_state.mode = "view"
+                    st.rerun()
+            with col3:
+                if st.button("Edit", key=f"edit_{p['id']}"):
+                    st.session_state.selected_id = p["id"]
+                    st.session_state.mode = "edit"
+                    st.rerun()
+            with col4:
+                if st.button("Delete", key=f"del_{p['id']}"):
+                    supabase.table("plants").delete().eq("id", p["id"]).execute()
+                    st.success(f"Deleted {p['name']}")
                     st.rerun()
 
 # ---------- Add Plant ----------
@@ -128,13 +141,24 @@ elif page == "Plant Details":
 
     plant = rows[0]
 
+    mode = st.session_state.get("mode", "view")
+
     col1, col2 = st.columns(2)
 
+    # ----- LEFT: text fields -----
     with col1:
-        st.subheader(plant["name"])
-        st.write(f"**Description:** {plant.get('description') or 'No description'}")
+        if mode == "edit":
+            new_name = st.text_input("Name", value=plant["name"])
+            new_desc = st.text_area(
+                "Description", value=plant.get("description") or "", height=100
+            )
+        else:
+            st.subheader(plant["name"])
+            st.write(f"**Description:** {plant.get('description') or 'No description'}")
+
         st.write(f"**Last watered:** {plant.get('last_watered') or 'Never'}")
 
+    # ----- RIGHT: photo -----
     with col2:
         photo_path = plant.get("photo_path")
         if photo_path:
@@ -142,7 +166,6 @@ elif page == "Plant Details":
                 public_url_data = supabase.storage.from_(BUCKET).get_public_url(
                     photo_path
                 )
-
                 if isinstance(public_url_data, dict) and "publicUrl" in public_url_data:
                     photo_url = public_url_data["publicUrl"]
                 elif hasattr(public_url_data, "data") and isinstance(
@@ -161,21 +184,68 @@ elif page == "Plant Details":
         else:
             st.write("❌ No photo.")
 
+        # Optional: allow replacing photo in edit mode
+        if mode == "edit":
+            new_file = st.file_uploader(
+                "Replace photo (optional)", type=["jpg", "jpeg", "png"], key="edit_photo"
+            )
+            if new_file is not None:
+                # We only save on Save Changes below
+                pass
+
+    # ----- Watering date (common) -----
     new_date = st.date_input(
         "Next watering date",
         value=datetime.now().date(),
     )
 
-    if st.button("✅ Update Watering Date", use_container_width=True):
-        try:
-            supabase.table("plants").update(
-                {"last_watered": str(new_date)}
-            ).eq("id", plant["id"]).execute()
-            st.success("Watering date updated!")
-            st.rerun()
-        except Exception as e:
-            st.error(f"Error updating watering date: {e}")
+    # ----- Buttons row -----
+    colA, colB, colC = st.columns(3)
 
-    if st.button("← Back to Overview", use_container_width=True):
-        st.session_state.selected_id = None
-        st.rerun()
+    # Save changes (edit mode)
+    with colA:
+        if mode == "edit":
+            if st.button("💾 Save Changes", use_container_width=True):
+                updates = {
+                    "name": new_name,
+                    "description": new_desc,
+                    "last_watered": str(new_date),
+                }
+
+                # handle optional new photo
+                if new_file is not None:
+                    from datetime import datetime as dt
+
+                    ext = new_file.name.split(".")[-1].lower()
+                    safe_name = new_name.lower().replace(" ", "_")
+                    photo_path_new = f"{safe_name}_{dt.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
+                    file_bytes = new_file.getvalue()
+                    supabase.storage.from_(BUCKET).upload(
+                        photo_path_new,
+                        io.BytesIO(file_bytes),
+                    )
+                    updates["photo_path"] = photo_path_new
+
+                supabase.table("plants").update(updates).eq(
+                    "id", plant["id"]
+                ).execute()
+                st.success("Changes saved!")
+                st.session_state.mode = "view"
+                st.rerun()
+
+    # Update watering only (view mode)
+    with colB:
+        if mode == "view":
+            if st.button("✅ Update Watering Date", use_container_width=True):
+                supabase.table("plants").update(
+                    {"last_watered": str(new_date)}
+                ).eq("id", plant["id"]).execute()
+                st.success("Watering date updated!")
+                st.rerun()
+
+    # Back button
+    with colC:
+        if st.button("← Back to Overview", use_container_width=True):
+            st.session_state.selected_id = None
+            st.session_state.mode = "view"
+            st.rerun()
