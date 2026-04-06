@@ -47,7 +47,7 @@ if page == "Overview":
             with col2:
                 if st.button("View", key=f"view_{p['id']}"):
                     st.session_state.selected_id = p["id"]
-                    st.experimental_rerun()
+                    st.rerun()
 
 # ---------- Add Plant ----------
 elif page == "Add Plant":
@@ -96,7 +96,7 @@ elif page == "Add Plant":
                 }
                 supabase.table("plants").insert(data).execute()
                 st.success("🌱 Plant added!")
-                st.experimental_rerun()
+                st.rerun()
             except Exception as e:
                 st.error(f"Error saving plant: {e}")
 
@@ -172,10 +172,10 @@ elif page == "Plant Details":
                 {"last_watered": str(new_date)}
             ).eq("id", plant["id"]).execute()
             st.success("Watering date updated!")
-            st.experimental_rerun()
+            st.rerun()
         except Exception as e:
             st.error(f"Error updating watering date: {e}")
 
     if st.button("← Back to Overview", use_container_width=True):
         st.session_state.selected_id = None
-        st.experimental_rerun()
+        st.rerun()
