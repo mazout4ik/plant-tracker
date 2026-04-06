@@ -15,11 +15,12 @@ BUCKET = "plant-photos"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ---------- UI state ----------
-page = st.sidebar.selectbox("Choose page", ["Overview", "Plant Details", "Add Plant"])
 if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
 if "mode" not in st.session_state:
     st.session_state.mode = "view"
+
+page = st.sidebar.selectbox("Choose page", ["Overview", "Plant Details", "Add Plant"])
 
 # ---------- Overview ----------
 if page == "Overview":
@@ -37,7 +38,7 @@ if page == "Overview":
         st.error(f"Error loading plants: {e}")
         plants = []
 
-     if not plants:
+    if not plants:
         st.info("No plants yet. Add one on the 'Add Plant' page.")
     else:
         for p in plants:
@@ -84,7 +85,6 @@ elif page == "Add Plant":
         else:
             photo_path = None
 
-            # Upload photo to Supabase Storage
             if uploaded_file is not None:
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 ext = uploaded_file.name.split(".")[-1].lower()
@@ -140,7 +140,6 @@ elif page == "Plant Details":
         st.stop()
 
     plant = rows[0]
-
     mode = st.session_state.get("mode", "view")
 
     col1, col2 = st.columns(2)
@@ -184,16 +183,15 @@ elif page == "Plant Details":
         else:
             st.write("❌ No photo.")
 
-        # Optional: allow replacing photo in edit mode
+        new_file = None
         if mode == "edit":
             new_file = st.file_uploader(
-                "Replace photo (optional)", type=["jpg", "jpeg", "png"], key="edit_photo"
+                "Replace photo (optional)",
+                type=["jpg", "jpeg", "png"],
+                key="edit_photo",
             )
-            if new_file is not None:
-                # We only save on Save Changes below
-                pass
 
-    # ----- Watering date (common) -----
+    # ----- Watering date -----
     new_date = st.date_input(
         "Next watering date",
         value=datetime.now().date(),
@@ -211,8 +209,6 @@ elif page == "Plant Details":
                     "description": new_desc,
                     "last_watered": str(new_date),
                 }
-
-                # handle optional new photo
                 if new_file is not None:
                     from datetime import datetime as dt
 
