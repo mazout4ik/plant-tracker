@@ -49,18 +49,7 @@ if page == "Overview":
             with col2:
                 if st.button("View", key=f"view_{p['id']}"):
                     st.session_state.selected_id = p["id"]
-                    st.session_state.mode = "view"
-                    st.rerun()
-            with col3:
-                if st.button("Edit", key=f"edit_{p['id']}"):
-                    st.session_state.selected_id = p["id"]
-                    st.session_state.mode = "edit"
-                    st.rerun()
-            with col4:
-                if st.button("Delete", key=f"del_{p['id']}"):
-                    supabase.table("plants").delete().eq("id", p["id"]).execute()
-                    st.success(f"Deleted {p['name']}")
-                    st.rerun()
+                    st.experimental_rerun()
 
 # ---------- Add Plant ----------
 elif page == "Add Plant":
@@ -199,53 +188,16 @@ elif page == "Plant Details":
         value=datetime.now().date(),
     )
 
-    # ----- Buttons row -----
-    colA, colB, colC = st.columns(3)
+    if st.button("✅ Update Watering Date", use_container_width=True):
+        try:
+            supabase.table("plants").update(
+                {"last_watered": str(new_date)}
+            ).eq("id", plant["id"]).execute()
+            st.success("Watering date updated!")
+            st.experimental_rerun()
+        except Exception as e:
+            st.error(f"Error updating watering date: {e}")
 
-    # Save changes (edit mode)
-    with colA:
-        if mode == "edit":
-            if st.button("💾 Save Changes", use_container_width=True):
-                updates = {
-                    "name": new_name,
-                    "description": new_desc,
-                    "last_watered": str(new_date),
-                }
-
-                # handle optional new photo
-                if new_file is not None:
-                    from datetime import datetime as dt
-
-                    ext = new_file.name.split(".")[-1].lower()
-                    safe_name = new_name.lower().replace(" ", "_")
-                    photo_path_new = f"{safe_name}_{dt.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-                    file_bytes = new_file.getvalue()
-                    supabase.storage.from_(BUCKET).upload(
-                        photo_path_new,
-                        io.BytesIO(file_bytes),
-                    )
-                    updates["photo_path"] = photo_path_new
-
-                supabase.table("plants").update(updates).eq(
-                    "id", plant["id"]
-                ).execute()
-                st.success("Changes saved!")
-                st.session_state.mode = "view"
-                st.rerun()
-
-    # Update watering only (view mode)
-    with colB:
-        if mode == "view":
-            if st.button("✅ Update Watering Date", use_container_width=True):
-                supabase.table("plants").update(
-                    {"last_watered": str(new_date)}
-                ).eq("id", plant["id"]).execute()
-                st.success("Watering date updated!")
-                st.rerun()
-
-    # Back button
-    with colC:
-        if st.button("← Back to Overview", use_container_width=True):
-            st.session_state.selected_id = None
-            st.session_state.mode = "view"
-            st.rerun()
+    if st.button("← Back to Overview", use_container_width=True):
+        st.session_state.selected_id = None
+        st.experimental_rerun()
