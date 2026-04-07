@@ -117,9 +117,8 @@ with st.form(key="add_plant_card"):
 
     with col_text:
         st.markdown("**Add plant**")
-        st.write("Create a new plant entry")
-
-    add_clicked = st.form_submit_button(" ", use_container_width=True)
+        
+    add_clicked = st.form_submit_button("Create a new plant entry", use_container_width=True)
 
 if add_clicked:
     st.session_state.page = "Add Plant"
