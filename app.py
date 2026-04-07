@@ -102,10 +102,10 @@ elif page == "Add Plant":
             photo_path = None
 
             if uploaded_file is not None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            ext = uploaded_file.name.split(".")[-1].lower()
-            safe_name = name.lower().replace(" ", "_")
-            photo_path = f"{safe_name}_{timestamp}.{ext}"
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                ext = uploaded_file.name.split(".")[-1].lower()
+                safe_name = name.lower().replace(" ", "_")
+                photo_path = f"{safe_name}_{timestamp}.{ext}"
 
             try:
                 # Pass raw bytes directly (storage3 will handle file-like)
