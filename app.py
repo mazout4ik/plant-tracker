@@ -48,48 +48,31 @@ page = st.session_state.page
 
 
 
-# ---------- Overview ----------
-if page == "Overview":
-    st.header("🏠 All Plants")
+# ----- Overview list -----
+st.subheader("My plants")
 
-    try:
-        response = (
-            supabase.table("plants")
-            .select("id, name, last_watered")
-            .order("name")
-            .execute()
-        )
-        plants = response.data or []
-    except Exception as e:
-        st.error(f"Error loading plants: {e}")
-        plants = []
+if not plants:
+    st.info("No plants yet. Add your first plant on the left.")
+else:
+    for p in plants:
+        col1, col2 = st.columns([3, 2])
 
-    if not plants:
-        st.info("No plants yet. Add one on the 'Add Plant' page.")
-    else:
-        for plant in plants:
-            with st.container(border=True):
-                col1, col2 = st.columns([1, 3])
+        with col1:
+            # Clickable plant name -> go to details
+            if st.button(p["name"], key=f"plant_{p['id']}", use_container_width=True):
+                st.session_state.selected_id = p["id"]
+                st.session_state.mode = "view"
+                st.session_state.page = "Plant details"
+                st.rerun()
 
-                with col1:
-                    # image, etc.
-                    pass
+        with col2:
+            last = p.get("last_watered") or "n/a"
+            st.caption(f"Last watered: {last}")
 
-                with col2:
-                    st.subheader(plant.get("name", "No name"))  # safe
-                    st.write(plant.get("description", ""))      # safe
 
-                    # Only View button
-                    colA, colB, colC = st.columns([1, 2, 1])
-                    with colB:
-                        if st.button(
-                            "👁 View",
-                            key=f"view_{plant['id']}",
-                            use_container_width=True,
-                        ):
-                            st.session_state.selected_id = plant["id"]
-                            st.session_state.mode = "view"
-                            st.rerun()
+
+
+
 
 # ---------- Add Plant ----------
 elif page == "Add Plant":
