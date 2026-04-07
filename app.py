@@ -24,7 +24,7 @@ if "page" not in st.session_state:
 
 page = st.session_state.page
 
-# Top navigation buttons (no Plant Details button)
+# Top navigation buttons
 col_nav1, col_nav2 = st.columns(2)
 with col_nav1:
     if st.button("🏠 Overview", use_container_width=True):
@@ -57,24 +57,24 @@ if page == "Overview":
         st.info("No plants yet. Add one on the 'Add Plant' page.")
     else:
         for p in plants:
-            col1, col2, col3 = st.columns([3, 1, 1])
+            col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
             with col1:
-                # Clickable name: opens Plant Details in view mode
-                if st.button(
-                    f"{p['name']} - Last watered: {p['last_watered'] or 'Never'}",
-                    key=f"name_{p['id']}",
-                ):
+                st.write(
+                    f"**{p['name']}** - Last watered: {p['last_watered'] or 'Never'}"
+                )
+            with col2:
+                if st.button("View", key=f"view_{p['id']}"):
                     st.session_state.selected_id = p["id"]
                     st.session_state.mode = "view"
                     st.session_state.page = "Plant Details"
                     st.rerun()
-            with col2:
+            with col3:
                 if st.button("Edit", key=f"edit_{p['id']}"):
                     st.session_state.selected_id = p["id"]
                     st.session_state.mode = "edit"
                     st.session_state.page = "Plant Details"
                     st.rerun()
-            with col3:
+            with col4:
                 if st.button("Delete", key=f"del_{p['id']}"):
                     supabase.table("plants").delete().eq("id", p["id"]).execute()
                     st.success(f"Deleted {p['name']}")
