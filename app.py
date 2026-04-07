@@ -73,12 +73,11 @@ if page == "Overview":
 
                 with col1:
                     # image, etc.
-                    ...
+                    pass
 
                 with col2:
-                    st.subheader(plant["name"])
-                    st.write(plant["description"])
-                    # maybe last_watered, etc.
+                    st.subheader(plant.get("name", "No name"))  # safe
+                    st.write(plant.get("description", ""))      # safe
 
                     # Only View button
                     colA, colB, colC = st.columns([1, 2, 1])
