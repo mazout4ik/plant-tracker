@@ -185,25 +185,9 @@ elif st.session_state.page == "Plant Details":
     with col2:
         photo_path = plant.get("photo_path")
         if photo_path:
-            try:
-                public_url_data = supabase.storage.from_(BUCKET).get_public_url(
-                    photo_path
-                )
-                if isinstance(public_url_data, dict) and "publicUrl" in public_url_data:
-                    photo_url = public_url_data["publicUrl"]
-                elif hasattr(public_url_data, "data") and isinstance(
-                    public_url_data.data, dict
-                ):
-                    photo_url = public_url_data.data.get("publicUrl")
-                else:
-                    photo_url = None
-
-                if photo_url:
-                    st.image(photo_url, use_column_width=True)
-                else:
-                    st.write("Photo URL not available.")
-            except Exception as e:
-                st.error(f"Error loading photo: {e}")
+            # Construct public URL directly
+            photo_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{photo_path}"
+            st.image(photo_url, use_column_width=True)
         else:
             st.write("❌ No photo.")
 
