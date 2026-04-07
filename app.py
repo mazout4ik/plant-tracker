@@ -102,20 +102,21 @@ elif page == "Add Plant":
             photo_path = None
 
             if uploaded_file is not None:
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                ext = uploaded_file.name.split(".")[-1].lower()
-                safe_name = name.lower().replace(" ", "_")
-                photo_path = f"{safe_name}_{timestamp}.{ext}"
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            ext = uploaded_file.name.split(".")[-1].lower()
+            safe_name = name.lower().replace(" ", "_")
+            photo_path = f"{safe_name}_{timestamp}.{ext}"
 
-                try:
-                    file_bytes = uploaded_file.getvalue()
-                    supabase.storage.from_(BUCKET).upload(
-                        photo_path,
-                        io.BytesIO(file_bytes),
-                    )
-                except Exception as e:
-                    st.error(f"Photo upload failed: {e}")
-                    photo_path = None
+            try:
+                # Pass raw bytes directly (storage3 will handle file-like)
+                file_bytes = uploaded_file.getvalue()
+                supabase.storage.from_(BUCKET).upload(
+                    photo_path,
+                    file_bytes,
+                )
+            except Exception as e:
+                st.error(f"Photo upload failed: {e}")
+                photo_path = None
 
             try:
                 data = {
@@ -130,6 +131,9 @@ elif page == "Add Plant":
                 st.error(f"Error saving plant: {e}")
 
     st.info("💡 Tip: On mobile, choose 'Camera' when uploading a photo.")
+
+
+
 
 # ---------- Plant Details ----------
 elif st.session_state.page == "Plant Details":
@@ -238,7 +242,7 @@ elif st.session_state.page == "Plant Details":
                     file_bytes = new_file.getvalue()
                     supabase.storage.from_(BUCKET).upload(
                         photo_path_new,
-                        io.BytesIO(file_bytes),
+                        file_bytes,
                     )
                     updates["photo_path"] = photo_path_new
 
