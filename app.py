@@ -47,7 +47,7 @@ with top_col1:
 
 with top_col2:
     # Only show Add plant on Overview
-    if st.session_state.page == "Overview":
+    if st.session_state.page !== "Overview":
         if st.button("➕ Add plant", key="add_plant", width="content"):
             st.session_state.page = "Add Plant"
             st.session_state.mode = "view"
