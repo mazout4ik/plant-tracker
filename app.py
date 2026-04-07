@@ -56,7 +56,7 @@ plants = (
 # ---------- Overview ----------
 if page == "Overview":
     st.header("🏠 All Plants")
-    st.subheader("Your plants")
+    st.subheader("My plants")
 
     if not plants:
         st.info("No plants yet. Add your first plant on the left.")
