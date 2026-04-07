@@ -70,31 +70,29 @@ if page == "Overview":
             last = p.get("last_watered") or "Never"
             photo_path = p.get("photo_path")
 
-            # One card per plant, with border
-            with st.container(border=True):
-                with st.form(key=f"plant_form_{plant_id}"):
-                    # Visual card content
-                    col_img, col_text = st.columns([1, 3])
+            with st.form(key=f"plant_form_{plant_id}"):
+                # Visual card content
+                col_img, col_text = st.columns([1, 3])
 
-                    with col_img:
-                        if photo_path:
-                            img_url = supabase.storage.from_(BUCKET).get_public_url(photo_path)
-                            st.image(img_url, width=60)
-                        else:
-                            st.write("🪴")
+                with col_img:
+                    if photo_path:
+                        img_url = supabase.storage.from_(BUCKET).get_public_url(photo_path)
+                        st.image(img_url, width=60)
+                    else:
+                        st.write("🪴")
 
-                    with col_text:
-                        st.markdown(f"**{name}**")
-                        st.write(f"Last watered: {last}")
+                with col_text:
+                    st.markdown(f"**{name}**")
+                    st.write(f"Last watered: {last}")
 
-                    # Make the whole card clickable
-                    submitted = st.form_submit_button("See details", width="stretch")
+                # This makes the whole card clickable
+                submitted = st.form_submit_button("See details", use_container_width=True)
 
-                if submitted:
-                    st.session_state.selected_id = plant_id
-                    st.session_state.mode = "view"
-                    st.session_state.page = "Plant details"
-                    st.rerun()
+            if submitted:
+                st.session_state.selected_id = plant_id
+                st.session_state.mode = "view"
+                st.session_state.page = "Plant details"
+                st.rerun()
 
 
 
