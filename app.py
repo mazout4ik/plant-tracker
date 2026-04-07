@@ -215,11 +215,17 @@ elif st.session_state.page == "Plant Details":
         value=datetime.now().date(),
     )
 
-    # ----- Buttons row -----
-    colA, colB, colC = st.columns(3)
+        # ----- Buttons row -----
+    colA, colB, colC, colD = st.columns(4)
+
+    # Edit button (switch to edit mode)
+    with colA:
+        if st.button("✏️ Edit", use_container_width=True):
+            st.session_state.mode = "edit"
+            st.rerun()
 
     # Save changes (edit mode)
-    with colA:
+    with colB:
         if mode == "edit":
             if st.button("💾 Save Changes", use_container_width=True):
                 updates = {
@@ -233,16 +239,11 @@ elif st.session_state.page == "Plant Details":
                     ext = new_file.name.split(".")[-1].lower()
                     safe_name = new_name.lower().replace(" ", "_")
                     photo_path_new = f"{safe_name}_{dt.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-                    file_bytes = new_file.getvalue()
-                    try:
-                        res = supabase.storage.from_(BUCKET).upload(
-                            photo_path_new,
-                            file_bytes,
-                        )
-                        st.caption(f"DEBUG upload edit: {res}")
-                        updates["photo_path"] = photo_path_new
-                    except Exception as e:
-                        st.error(f"Photo upload failed: {e}")
+                    supabase.storage.from_(BUCKET).upload(
+                        photo_path_new,
+                        new_file.read(),
+                    )
+                    updates["photo_path"] = photo_path_new
 
                 supabase.table("plants").update(updates).eq(
                     "id", plant["id"]
@@ -252,7 +253,7 @@ elif st.session_state.page == "Plant Details":
                 st.rerun()
 
     # Update watering only (view mode)
-    with colB:
+    with colC:
         if mode == "view":
             if st.button("✅ Update Watering Date", use_container_width=True):
                 supabase.table("plants").update(
@@ -262,7 +263,7 @@ elif st.session_state.page == "Plant Details":
                 st.rerun()
 
     # Back button
-    with colC:
+    with colD:
         if st.button("← Back to Overview", use_container_width=True):
             st.session_state.selected_id = None
             st.session_state.mode = "view"
