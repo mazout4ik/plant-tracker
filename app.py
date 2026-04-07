@@ -31,19 +31,33 @@ if "page" not in st.session_state:
 
 page = st.session_state.page
 
+
+
 # Top navigation buttons
-col_nav1, col_nav2 = st.columns(2)
-with col_nav1:
-    if st.button("🏠 Overview", use_container_width=True):
+col_top1, col_top2 = st.columns([1, 1])
+
+with col_top1:
+    # Rename to "Back to list"
+    if st.button("← Back to list", use_container_width=True):
         st.session_state.page = "Overview"
+        st.session_state.selected_id = None
+        st.session_state.mode = "view"
         st.rerun()
-with col_nav2:
-    if st.button("➕ Add Plant", use_container_width=True):
-        st.session_state.page = "Add Plant"
-        st.rerun()
+
+with col_top2:
+    # Remove Add plant button entirely on Details screen,
+    # or if this block is global, guard it:
+    if st.session_state.page == "Overview":
+        if st.button("➕ Add plant", use_container_width=True):
+            st.session_state.page = "Add Plant"
+            st.session_state.mode = "view"
+            st.rerun()
 
 page = st.session_state.page
 
+
+
+######################################################
 
 plants = (
     supabase.table("plants")
@@ -280,11 +294,3 @@ elif st.session_state.page == "Plant Details":
                 ).eq("id", plant["id"]).execute()
                 st.success("Watering date updated!")
                 st.rerun()
-
-    # Back button
-    with colD:
-        if st.button("← Back to Overview", use_container_width=True):
-            st.session_state.selected_id = None
-            st.session_state.mode = "view"
-            st.session_state.page = "Overview"
-            st.rerun()
