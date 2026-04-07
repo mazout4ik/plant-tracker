@@ -165,6 +165,13 @@ elif page == "Plant Details":
 
     col1, col2 = st.columns(2)
 
+if st.button("← Back to Overview", use_container_width=True):
+    st.session_state.selected_id = None
+    st.session_state.mode = "view"
+    st.session_state.page = "Overview"
+    st.rerun()
+
+
     # ----- LEFT: text fields -----
     with col1:
         if mode == "edit":
