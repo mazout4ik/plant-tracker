@@ -53,32 +53,31 @@ if page == "Overview":
         st.error(f"Error loading plants: {e}")
         plants = []
 
-    if not plants:
-        st.info("No plants yet. Add one on the 'Add Plant' page.")
-    else:
-        for p in plants:
-            col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
-            with col1:
-                st.write(
-                    f"**{p['name']}** - Last watered: {p['last_watered'] or 'Never'}"
-                )
-            with col2:
-                if st.button("View", key=f"view_{p['id']}"):
-                    st.session_state.selected_id = p["id"]
-                    st.session_state.mode = "view"
-                    st.session_state.page = "Plant Details"
-                    st.rerun()
-            with col3:
-                if st.button("Edit", key=f"edit_{p['id']}"):
-                    st.session_state.selected_id = p["id"]
-                    st.session_state.mode = "edit"
-                    st.session_state.page = "Plant Details"
-                    st.rerun()
-            with col4:
-                if st.button("Delete", key=f"del_{p['id']}"):
-                    supabase.table("plants").delete().eq("id", p["id"]).execute()
-                    st.success(f"Deleted {p['name']}")
-                    st.rerun()
+if not plants:
+    st.info("No plants yet. Add one on the 'Add Plant' page.")
+else:
+    for p in plants:
+        col1, col2, col3 = st.columns([3, 1, 1])
+        with col1:
+            if st.button(
+                f"{p['name']} - Last watered: {p['last_watered'] or 'Never'}",
+                key=f"name_{p['id']}",
+            ):
+                st.session_state.selected_id = p["id"]
+                st.session_state.mode = "view"
+                st.session_state.page = "Plant Details"
+                st.rerun()
+        with col2:
+            if st.button("Edit", key=f"edit_{p['id']}"):
+                st.session_state.selected_id = p["id"]
+                st.session_state.mode = "edit"
+                st.session_state.page = "Plant Details"
+                st.rerun()
+        with col3:
+            if st.button("Delete", key=f"del_{p['id']}"):
+                supabase.table("plants").delete().eq("id", p["id"]).execute()
+                st.success(f"Deleted {p['name']}")
+                st.rerun()
 
 # ---------- Add Plant ----------
 elif page == "Add Plant":
