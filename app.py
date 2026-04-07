@@ -83,7 +83,7 @@ if page == "Overview":
 
                 with col_text:
                     st.markdown(f"**{name}**")
-                    st.write(f"last watered: {last}")
+                    st.write(f"Last watered: {last}")
 
                 # This makes the whole card clickable
                 submitted = st.form_submit_button("See details", use_container_width=True)
