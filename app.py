@@ -86,7 +86,7 @@ if page == "Overview":
                     st.write(f"last watered: {last}")
 
                 # This makes the whole card clickable
-                submitted = st.form_submit_button("See details", use_container_width=True)
+                submitted = st.form()
 
             if submitted:
                 st.session_state.selected_id = plant_id
