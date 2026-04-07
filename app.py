@@ -14,8 +14,7 @@ BUCKET = "plant-photos"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ---------- UI state ----------
-# ---------- UI state ----------
+# ---------- UI state (no sidebar) ----------
 if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
 if "mode" not in st.session_state:
@@ -23,15 +22,24 @@ if "mode" not in st.session_state:
 if "page" not in st.session_state:
     st.session_state.page = "Overview"
 
-page = st.sidebar.selectbox(
-    "Choose page",
-    ["Overview", "Plant Details", "Add Plant"],
-    index=["Overview", "Plant Details", "Add Plant"].index(st.session_state.page),
-)
+page = st.session_state.page
 
-# Keep session in sync if user changes via sidebar
-if page != st.session_state.page:
-    st.session_state.page = page
+# Top navigation buttons
+col_nav1, col_nav2, col_nav3 = st.columns(3)
+with col_nav1:
+    if st.button("🏠 Overview", use_container_width=True):
+        st.session_state.page = "Overview"
+        st.rerun()
+with col_nav2:
+    if st.button("📋 Plant Details", use_container_width=True):
+        st.session_state.page = "Plant Details"
+        st.rerun()
+with col_nav3:
+    if st.button("➕ Add Plant", use_container_width=True):
+        st.session_state.page = "Add Plant"
+        st.rerun()
+
+page = st.session_state.page
 
 # ---------- Overview ----------
 if page == "Overview":
