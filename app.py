@@ -107,16 +107,16 @@ elif page == "Add Plant":
                 safe_name = name.lower().replace(" ", "_")
                 photo_path = f"{safe_name}_{timestamp}.{ext}"
 
-            try:
-                # Pass raw bytes directly (storage3 will handle file-like)
-                file_bytes = uploaded_file.getvalue()
-                supabase.storage.from_(BUCKET).upload(
-                    photo_path,
-                    file_bytes,
-                )
-            except Exception as e:
-                st.error(f"Photo upload failed: {e}")
-                photo_path = None
+                try:
+                    file_bytes = uploaded_file.getvalue()
+                    res = supabase.storage.from_(BUCKET).upload(
+                        photo_path,
+                        file_bytes,
+                    )
+                    st.caption(f"DEBUG upload add: {res}")
+                except Exception as e:
+                    st.error(f"Photo upload failed: {e}")
+                    photo_path = None
 
             try:
                 data = {
@@ -240,11 +240,15 @@ elif st.session_state.page == "Plant Details":
                     safe_name = new_name.lower().replace(" ", "_")
                     photo_path_new = f"{safe_name}_{dt.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
                     file_bytes = new_file.getvalue()
-                    supabase.storage.from_(BUCKET).upload(
-                        photo_path_new,
-                        file_bytes,
-                    )
-                    updates["photo_path"] = photo_path_new
+                    try:
+                        res = supabase.storage.from_(BUCKET).upload(
+                            photo_path_new,
+                            file_bytes,
+                        )
+                        st.caption(f"DEBUG upload edit: {res}")
+                        updates["photo_path"] = photo_path_new
+                    except Exception as e:
+                        st.error(f"Photo upload failed: {e}")
 
                 supabase.table("plants").update(updates).eq(
                     "id", plant["id"]
