@@ -59,7 +59,7 @@ plants = (
 #-----------------------------------------------------------------------------
 if page == "Overview":
     st.header("🏠 All Plants")
-    st.subheader("Your plants")
+    st.subheader("My plants")
 
     if not plants:
         st.info("No plants yet. Add your first plant on the left.")
@@ -86,7 +86,7 @@ if page == "Overview":
                     st.write(f"last watered: {last}")
 
                 # This makes the whole card clickable
-                submitted = st.form_submit_button(" ", use_container_width=True)
+                submitted = st.form_submit_button("See details", use_container_width=True)
 
             if submitted:
                 st.session_state.selected_id = plant_id
