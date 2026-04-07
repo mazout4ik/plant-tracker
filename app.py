@@ -65,7 +65,7 @@ plants = (
 #-----------------------------------------------------------------------------
 # ----------------- OVERVIEW PAGE -----------------
 if st.session_state.page == "Overview":
-    st.header("🏠🌱🌸🌼My plants")
+    st.header("🏠🌱🌸🌼\n My plants")
 
     if not plants:
         st.info("No plants yet. Add your first plant below.")
