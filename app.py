@@ -63,7 +63,7 @@ if page == "Overview":
     else:
         for p in plants:
             last = p.get("Last_watered") or "Never"
-            label = f"{p['name']}  ·  last watered: {last}"
+            label = f"{p['name']}  ·  Last watered: {last}"
 
             if st.button(label, key=f"plant_{p['id']}", use_container_width=True):
                 st.session_state.selected_id = p["id"]
