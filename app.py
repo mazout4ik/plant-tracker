@@ -53,7 +53,10 @@ plants = (
 ).data
 
 
+
+#-----------------------------------------------------------------------------
 # ---------- Overview ----------
+#-----------------------------------------------------------------------------
 if page == "Overview":
     st.header("🏠 All Plants")
     st.subheader("Your plants")
@@ -67,18 +70,8 @@ if page == "Overview":
             last = p.get("last_watered") or "n/a"
             photo_path = p.get("photo_path")
 
-            # Make a clickable card
-            card = st.container()
-            with card:
-                # This invisible button is what we actually click
-                clicked = st.button(
-                    " ",
-                    key=f"card_btn_{plant_id}",
-                    help=name,  # optional tooltip
-                    use_container_width=True,
-                )
-
-                # Layout inside the "card"
+            with st.form(key=f"plant_form_{plant_id}"):
+                # Visual card content
                 col_img, col_text = st.columns([1, 3])
 
                 with col_img:
@@ -92,8 +85,10 @@ if page == "Overview":
                     st.markdown(f"**{name}**")
                     st.write(f"last watered: {last}")
 
-            # React to click
-            if clicked:
+                # This makes the whole card clickable
+                submitted = st.form_submit_button(" ", use_container_width=True)
+
+            if submitted:
                 st.session_state.selected_id = plant_id
                 st.session_state.mode = "view"
                 st.session_state.page = "Plant details"
