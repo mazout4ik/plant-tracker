@@ -73,22 +73,22 @@ if page == "Overview":
                 with col1:
                     # image, etc.
 
-                with col2:
-                    st.subheader(plant["name"])
-                    st.write(plant["description"])
-                    # maybe last_watered, etc.
+            with col2:
+                st.subheader(plant["name"])
+                st.write(plant["description"])
+                # maybe last_watered, etc.
 
-                    # Only View button
-                    colA, colB, colC = st.columns([1, 2, 1])
-                    with colB:
-                        if st.button(
-                            "👁 View",
-                            key=f"view_{plant['id']}",
-                            use_container_width=True,
-                        ):
-                            st.session_state.selected_id = plant["id"]
-                            st.session_state.mode = "view"
-                            st.rerun()
+                # Only View button
+                colA, colB, colC = st.columns([1, 2, 1])
+                with colB:
+                    if st.button(
+                         "👁 View",
+                        key=f"view_{plant['id']}",
+                        use_container_width=True,
+                    ):
+                        st.session_state.selected_id = plant["id"]
+                        st.session_state.mode = "view"
+                        st.rerun()
 
 # ---------- Add Plant ----------
 elif page == "Add Plant":
