@@ -63,23 +63,20 @@ plants = (
 
 
 #-----------------------------------------------------------------------------
-# ---------- Overview ----------
-#-----------------------------------------------------------------------------
-if page == "Overview":
-    st.header("🏠 All Plants")
-    st.subheader("My plants")
+# ----------------- OVERVIEW PAGE -----------------
+if st.session_state.page == "Overview":
+    st.subheader("Your plants")
 
     if not plants:
-        st.info("No plants yet. Add your first plant on the left.")
+        st.info("No plants yet. Add your first plant below.")
     else:
         for p in plants:
             plant_id = p["id"]
             name = p.get("name", "No name")
-            last = p.get("last_watered") or "Never"
+            last = p.get("last_watered") or "n/a"
             photo_path = p.get("photo_path")
 
             with st.form(key=f"plant_form_{plant_id}"):
-                # Visual card content
                 col_img, col_text = st.columns([1, 3])
 
                 with col_img:
@@ -91,34 +88,35 @@ if page == "Overview":
 
                 with col_text:
                     st.markdown(f"**{name}**")
-                    st.write(f"Last watered: {last}")
+                    st.write(f"last watered: {last}")
 
-                # This makes the whole card clickable
-                submitted = st.form_submit_button("See details", use_container_width=True)
+                submitted = st.form_submit_button(" ", use_container_width=True)
 
             if submitted:
+                st.session_state.page = "Plant Details"
                 st.session_state.selected_id = plant_id
                 st.session_state.mode = "view"
-                st.session_state.page = "Plant Details"
                 st.rerun()
 
-# ----- Add plant card at the bottom -----
-with st.form(key="add_plant_card"):
-    col_img, col_text = st.columns([1, 3])
+    # Add plant card only on Overview
+    with st.form(key="add_plant_card"):
+        col_img, col_text = st.columns([1, 3])
 
-    with col_img:
-        st.write("➕")
+        with col_img:
+            st.write("➕")
 
-    with col_text:
-        st.markdown("**Add plant**")
-        
-    add_clicked = st.form_submit_button("Create a new plant entry", use_container_width=True)
+        with col_text:
+            st.markdown("**Add plant**")
+            st.write("Create a new plant entry")
 
-if add_clicked:
-    st.session_state.page = "Add Plant"
-    st.session_state.selected_id = None
-    st.session_state.mode = "view"
-    st.rerun()
+        add_clicked = st.form_submit_button(" ", use_container_width=True)
+
+    if add_clicked:
+        st.session_state.page = "Add Plant"
+        st.session_state.selected_id = None
+        st.session_state.mode = "view"
+        st.rerun()
+
 
 
 
