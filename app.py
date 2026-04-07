@@ -65,7 +65,7 @@ plants = (
 #-----------------------------------------------------------------------------
 # ----------------- OVERVIEW PAGE -----------------
 if st.session_state.page == "Overview":
-    st.subheader("🏠🌱🌸🌼My plants")
+    st.header("🏠🌱🌸🌼My plants")
 
     if not plants:
         st.info("No plants yet. Add your first plant below.")
@@ -90,7 +90,7 @@ if st.session_state.page == "Overview":
                     st.markdown(f"**{name}**")
                     st.write(f"last watered: {last}")
 
-                submitted = st.form_submit_button(" ", use_container_width=True)
+                submitted = st.form_submit_button("See details", use_container_width=True)
 
             if submitted:
                 st.session_state.page = "Plant Details"
