@@ -108,7 +108,24 @@ if page == "Overview":
                 st.session_state.page = "Plant Details"
                 st.rerun()
 
+# ----- Add plant card at the bottom -----
+with st.form(key="add_plant_card"):
+    col_img, col_text = st.columns([1, 3])
 
+    with col_img:
+        st.write("➕")
+
+    with col_text:
+        st.markdown("**Add plant**")
+        st.write("Create a new plant entry")
+
+    add_clicked = st.form_submit_button(" ", use_container_width=True)
+
+if add_clicked:
+    st.session_state.page = "Add Plant"
+    st.session_state.selected_id = None
+    st.session_state.mode = "view"
+    st.rerun()
 
 
 
