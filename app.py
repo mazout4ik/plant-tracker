@@ -190,7 +190,7 @@ elif st.session_state.page == "Plant Details":
     st.header("📋 Plant Details")
 
     # Debug info – you can remove later
-    st.caption(f"DEBUG: selected_id={st.session_state.selected_id}")
+    #st.caption(f"DEBUG: selected_id={st.session_state.selected_id}")
 
     if st.session_state.selected_id is None:
         st.warning("👈 Select a plant on the 'Overview' page first.")
