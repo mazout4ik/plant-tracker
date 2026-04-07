@@ -34,21 +34,21 @@ page = st.session_state.page
 
 
 # Top navigation buttons
-col_top1, col_top2 = st.columns([1, 1])
+top_col1, top_col2 = st.columns([1, 1])
 
-with col_top1:
-    # Rename to "Back to list"
-    if st.button("←", key="back_to_list", width="content"):
-        st.session_state.page = "Overview"
-        st.session_state.selected_id = None
-        st.session_state.mode = "view"
-        st.rerun()
+with top_col1:
+    # Only show back button when NOT on Overview
+    if st.session_state.page != "Overview":
+        if st.button("←", key="back_to_list", width="content"):
+            st.session_state.page = "Overview"
+            st.session_state.selected_id = None
+            st.session_state.mode = "view"
+            st.rerun()
 
-with col_top2:
-    # Remove Add plant button entirely on Details screen,
-    # or if this block is global, guard it:
+with top_col2:
+    # Only show Add plant on Overview
     if st.session_state.page == "Overview":
-        if st.button("➕ Add plant", use_container_width=True):
+        if st.button("➕ Add plant", key="add_plant", width="content"):
             st.session_state.page = "Add Plant"
             st.session_state.mode = "view"
             st.rerun()
