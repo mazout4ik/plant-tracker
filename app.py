@@ -132,13 +132,17 @@ elif page == "Add Plant":
     st.info("💡 Tip: On mobile, choose 'Camera' when uploading a photo.")
 
 # ---------- Plant Details ----------
-elif page == "Plant Details":
+elif st.session_state.page == "Plant Details":
     st.header("📋 Plant Details")
+
+    # Debug info – you can remove later
+    st.caption(f"DEBUG: selected_id={st.session_state.selected_id}")
 
     if st.session_state.selected_id is None:
         st.warning("👈 Select a plant on the 'Overview' page first.")
         st.stop()
 
+    # Fetch plant by ID
     try:
         response = (
             supabase.table("plants")
@@ -159,13 +163,6 @@ elif page == "Plant Details":
     mode = st.session_state.get("mode", "view")
 
     col1, col2 = st.columns(2)
-
-if st.button("← Back to Overview", use_container_width=True):
-    st.session_state.selected_id = None
-    st.session_state.mode = "view"
-    st.session_state.page = "Overview"
-    st.rerun()
-
 
     # ----- LEFT: text fields -----
     with col1:
@@ -267,4 +264,5 @@ if st.button("← Back to Overview", use_container_width=True):
         if st.button("← Back to Overview", use_container_width=True):
             st.session_state.selected_id = None
             st.session_state.mode = "view"
+            st.session_state.page = "Overview"
             st.rerun()
