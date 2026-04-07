@@ -187,7 +187,10 @@ elif st.session_state.page == "Plant Details":
         if photo_path:
             # Construct public URL directly
             photo_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{photo_path}"
-            st.image(photo_url, use_column_width=True)
+            st.image(photo_url, 
+                     width=400,          # target ~400x400 display size
+                    clamp=True,         # better contrast handling
+                    )
         else:
             st.write("❌ No photo.")
 
