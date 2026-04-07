@@ -55,7 +55,7 @@ page = st.session_state.page
 
 plants = (
     supabase.table("plants")
-    .select("id, name, description, last_watered, photo_path")  # include description
+    .select("id, name, description, last_watered, photo_path, watering_frequency_days")
     .order("name")
     .execute()
 ).data
@@ -90,6 +90,10 @@ if st.session_state.page == "Overview":
                 with col_text:
                     st.markdown(f"**{name}**")
                     st.write(f"Last watered: {last}")
+                    freq = p.get("watering_frequency_days")
+                    if freq:
+                        st.caption(f"Every {freq} days")
+                    
 
                 submitted = st.form_submit_button("See details", use_container_width=True)
 
@@ -129,6 +133,13 @@ elif page == "Add Plant":
 
     name = st.text_input("Plant Name")
     description = st.text_area("Description", height=100)
+    watering_frequency_days = st.number_input(
+    "Watering frequency (days)",
+    min_value=1,
+    max_value=365,
+    value=7,
+    step=1,
+)
 
     uploaded_file = st.file_uploader(
         "📸 Take/upload photo (you can use phone camera)",
@@ -167,6 +178,7 @@ elif page == "Add Plant":
                     "name": name,
                     "description": description,
                     "photo_path": photo_path,
+                    "watering_frequency_days": int(watering_frequency_days) if watering_frequency_days else None,
                 }
                 supabase.table("plants").insert(data).execute()
                 st.success("🌱 Plant added!")
@@ -223,9 +235,20 @@ elif st.session_state.page == "Plant Details":
             new_desc = st.text_area(
                 "Description", value=plant.get("description") or "", height=100
             )
+            new_freq = st.number_input(
+                "Watering frequency (days)",
+                min_value=1,
+                max_value=365,
+                value=plant.get("watering_frequency_days") or 7,
+                step=1,
+            )
         else:
             st.subheader(plant["name"])
             st.write(f"**Description:** {plant.get('description') or 'No description'}")
+            freq = plant.get("watering_frequency_days")
+            st.write(
+                f"**Watering frequency:** {freq} days" if freq else "**Watering frequency:** not set"
+            )
 
         st.write(f"**Last watered:** {plant.get('last_watered') or 'Never'}")
 
@@ -273,6 +296,7 @@ elif st.session_state.page == "Plant Details":
                     "name": new_name,
                     "description": new_desc,
                     "last_watered": str(new_date),
+                    "watering_frequency_days": int(new_freq) if new_freq else None,
                 }
                 if new_file is not None:
                     from datetime import datetime as dt
