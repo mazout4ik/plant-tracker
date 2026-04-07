@@ -62,7 +62,7 @@ if page == "Overview":
         st.info("No plants yet. Add your first plant on the left.")
     else:
         for p in plants:
-            last = p.get("last_watered") or "n/a"
+            last = p.get("Last_watered") or "Never"
             label = f"{p['name']}  ·  last watered: {last}"
 
             if st.button(label, key=f"plant_{p['id']}", use_container_width=True):
