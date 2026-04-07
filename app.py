@@ -24,17 +24,13 @@ if "page" not in st.session_state:
 
 page = st.session_state.page
 
-# Top navigation buttons
-col_nav1, col_nav2, col_nav3 = st.columns(3)
+# Top navigation buttons (no Plant Details button)
+col_nav1, col_nav2 = st.columns(2)
 with col_nav1:
     if st.button("🏠 Overview", use_container_width=True):
         st.session_state.page = "Overview"
         st.rerun()
 with col_nav2:
-    if st.button("📋 Plant Details", use_container_width=True):
-        st.session_state.page = "Plant Details"
-        st.rerun()
-with col_nav3:
     if st.button("➕ Add Plant", use_container_width=True):
         st.session_state.page = "Add Plant"
         st.rerun()
@@ -61,24 +57,24 @@ if page == "Overview":
         st.info("No plants yet. Add one on the 'Add Plant' page.")
     else:
         for p in plants:
-            col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
+            col1, col2, col3 = st.columns([3, 1, 1])
             with col1:
-                st.write(
-                    f"**{p['name']}** - Last watered: {p['last_watered'] or 'Never'}"
-                )
-            with col2:
-                if st.button("View", key=f"view_{p['id']}"):
+                # Clickable name: opens Plant Details in view mode
+                if st.button(
+                    f"{p['name']} - Last watered: {p['last_watered'] or 'Never'}",
+                    key=f"name_{p['id']}",
+                ):
                     st.session_state.selected_id = p["id"]
                     st.session_state.mode = "view"
                     st.session_state.page = "Plant Details"
                     st.rerun()
-            with col3:
+            with col2:
                 if st.button("Edit", key=f"edit_{p['id']}"):
                     st.session_state.selected_id = p["id"]
                     st.session_state.mode = "edit"
                     st.session_state.page = "Plant Details"
                     st.rerun()
-            with col4:
+            with col3:
                 if st.button("Delete", key=f"del_{p['id']}"):
                     supabase.table("plants").delete().eq("id", p["id"]).execute()
                     st.success(f"Deleted {p['name']}")
