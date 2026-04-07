@@ -45,34 +45,36 @@ with col_nav2:
 page = st.session_state.page
 
 
+plants = (
+    supabase.table("plants")
+    .select("id, name, description, last_watered, photo_path")  # include description
+    .order("name")
+    .execute()
+).data
 
 
+# ---------- Overview ----------
+if page == "Overview":
+    st.header("🏠 All Plants")
+    st.subheader("Your plants")
 
-# ----- Overview list -----
-st.subheader("My plants")
+    if not plants:
+        st.info("No plants yet. Add your first plant on the left.")
+    else:
+        for p in plants:
+            col1, col2 = st.columns([3, 2])
 
-if not plants:
-    st.info("No plants yet. Add your first plant on the left.")
-else:
-    for p in plants:
-        col1, col2 = st.columns([3, 2])
+            with col1:
+                # Clickable plant name -> go to details
+                if st.button(p["name"], key=f"plant_{p['id']}", use_container_width=True):
+                    st.session_state.selected_id = p["id"]
+                    st.session_state.mode = "view"
+                    st.session_state.page = "Plant details"
+                    st.rerun()
 
-        with col1:
-            # Clickable plant name -> go to details
-            if st.button(p["name"], key=f"plant_{p['id']}", use_container_width=True):
-                st.session_state.selected_id = p["id"]
-                st.session_state.mode = "view"
-                st.session_state.page = "Plant details"
-                st.rerun()
-
-        with col2:
-            last = p.get("last_watered") or "n/a"
-            st.caption(f"Last watered: {last}")
-
-
-
-
-
+            with col2:
+                last = p.get("last_watered") or "n/a"
+                st.caption(f"Last watered: {last}")
 
 # ---------- Add Plant ----------
 elif page == "Add Plant":
