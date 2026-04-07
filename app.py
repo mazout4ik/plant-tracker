@@ -70,8 +70,10 @@ if page == "Overview":
         for plant in plants:
             with st.container(border=True):
                 col1, col2 = st.columns([1, 3])
+
                 with col1:
                     # image, etc.
+                    ...
 
                 with col2:
                     st.subheader(plant["name"])
