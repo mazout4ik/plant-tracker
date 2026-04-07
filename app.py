@@ -73,7 +73,7 @@ if st.session_state.page == "Overview":
         for p in plants:
             plant_id = p["id"]
             name = p.get("name", "No name")
-            last = p.get("last_watered") or "n/a"
+            last = p.get("last_watered") or "Never"
             photo_path = p.get("photo_path")
 
             with st.form(key=f"plant_form_{plant_id}"):
@@ -88,7 +88,7 @@ if st.session_state.page == "Overview":
 
                 with col_text:
                     st.markdown(f"**{name}**")
-                    st.write(f"last watered: {last}")
+                    st.write(f"Last watered: {last}")
 
                 submitted = st.form_submit_button("See details", use_container_width=True)
 
