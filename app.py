@@ -4,8 +4,15 @@ from PIL import Image
 import io
 from supabase import create_client, Client
 
+# Load logo
+logo = Image.open("logo.png")
+
 # ---------- Page config ----------
-st.set_page_config(page_title="Plant Tracker", layout="wide")
+st.set_page_config(
+    page_title="Plant Tracker",
+    page_icon=logo,      # use your logo here
+    layout="wide",
+)
 
 # ---------- Supabase config ----------
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
