@@ -91,7 +91,7 @@ if page == "Overview":
             if submitted:
                 st.session_state.selected_id = plant_id
                 st.session_state.mode = "view"
-                st.session_state.page = "Plant details"
+                st.session_state.page = "Plant Details"
                 st.rerun()
 
 
@@ -99,44 +99,9 @@ if page == "Overview":
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#-----------------------------------------------------------------------------
 # ---------- Add Plant ----------
+#-----------------------------------------------------------------------------
 elif page == "Add Plant":
     st.header("➕ Add New Plant")
 
@@ -192,7 +157,11 @@ elif page == "Add Plant":
 
 
 
+
+
+#-----------------------------------------------------------------------------
 # ---------- Plant Details ----------
+#-----------------------------------------------------------------------------
 elif st.session_state.page == "Plant Details":
     st.header("📋 Plant Details")
 
