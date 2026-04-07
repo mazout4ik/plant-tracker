@@ -62,14 +62,46 @@ if page == "Overview":
         st.info("No plants yet. Add your first plant on the left.")
     else:
         for p in plants:
-            last = p.get("Last_watered") or "Never"
-            label = f"{p['name']}  \n  Last watered: {last}"
+            plant_id = p["id"]
+            name = p.get("name", "No name")
+            last = p.get("last_watered") or "n/a"
+            photo_path = p.get("photo_path")
 
-            if st.button(label, key=f"plant_{p['id']}", use_container_width=True):
-                st.session_state.selected_id = p["id"]
+            # Make a clickable card
+            card = st.container()
+            with card:
+                # This invisible button is what we actually click
+                clicked = st.button(
+                    " ",
+                    key=f"card_btn_{plant_id}",
+                    help=name,  # optional tooltip
+                    use_container_width=True,
+                )
+
+                # Layout inside the "card"
+                col_img, col_text = st.columns([1, 3])
+
+                with col_img:
+                    if photo_path:
+                        img_url = supabase.storage.from_(BUCKET).get_public_url(photo_path)
+                        st.image(img_url, width=60)
+                    else:
+                        st.write("🪴")
+
+                with col_text:
+                    st.markdown(f"**{name}**")
+                    st.write(f"last watered: {last}")
+
+            # React to click
+            if clicked:
+                st.session_state.selected_id = plant_id
                 st.session_state.mode = "view"
                 st.session_state.page = "Plant details"
                 st.rerun()
+
+
+
+
 
 # ---------- Add Plant ----------
 elif page == "Add Plant":
