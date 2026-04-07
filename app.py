@@ -38,7 +38,7 @@ col_top1, col_top2 = st.columns([1, 1])
 
 with col_top1:
     # Rename to "Back to list"
-    if st.button("← Back to list", use_container_width=True):
+    if st.button("←", use_container_width=True):
         st.session_state.page = "Overview"
         st.session_state.selected_id = None
         st.session_state.mode = "view"
