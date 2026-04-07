@@ -67,7 +67,7 @@ if page == "Overview":
         for p in plants:
             plant_id = p["id"]
             name = p.get("name", "No name")
-            last = p.get("last_watered") or "n/a"
+            last = p.get("last_watered") or "Never"
             photo_path = p.get("photo_path")
 
             with st.form(key=f"plant_form_{plant_id}"):
