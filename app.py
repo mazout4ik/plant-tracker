@@ -323,74 +323,92 @@ elif st.session_state.page == "Plant Details":
     )
 
         # ----- Buttons row -----
-    colA, colB, colC, colD = st.columns(4)
+    if mode == "view":
+        # 3 buttons: Edit, Update watering date, Delete
+        colA, colB, colC = st.columns(3)
 
-    # Edit button (switch to edit mode)
-    with colA:
-        if st.button("✏️ Edit", use_container_width=True):
-            st.session_state.mode = "edit"
-            st.rerun()
-
-    # Save changes (edit mode)
-    with colB:
-        if mode == "edit":
-            if st.button("💾 Save Changes", use_container_width=True):
-                updates = {
-                    "name": new_name,
-                    "description": new_desc,
-                    "last_watered": str(new_date),
-                    "watering_frequency_days": int(new_freq) if new_freq else None,
-                }
-                if new_file is not None:
-                    from datetime import datetime as dt
-
-                    ext = new_file.name.split(".")[-1].lower()
-                    safe_name = new_name.lower().replace(" ", "_")
-                    photo_path_new = f"{safe_name}_{dt.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-                    supabase.storage.from_(BUCKET).upload(
-                        photo_path_new,
-                        new_file.read(),
-                    )
-                    updates["photo_path"] = photo_path_new
-
-                supabase.table("plants").update(updates).eq(
-                    "id", plant["id"]
-                ).execute()
-                st.success("Changes saved!")
-                st.session_state.mode = "view"
+        with colA:
+            if st.button("✏️ Edit", use_container_width=True):
+                st.session_state.mode = "edit"
                 st.rerun()
 
-    # Update watering only (view mode)
-    with colC:
-        if mode == "view":
-            if st.button("✅ Update Watering Date", use_container_width=True):
+        with colB:
+            if st.button("✅ Update watering date", use_container_width=True):
                 supabase.table("plants").update(
                     {"last_watered": str(new_date)}
                 ).eq("id", plant["id"]).execute()
                 st.success("Watering date updated!")
                 st.rerun()
-    
-    # Delete button (always visible)
-    with colD:
-        if st.button("🗑 Delete", use_container_width=True):
-            # Optional: simple confirm toggle
-            if "confirm_delete" not in st.session_state:
-                st.session_state.confirm_delete = True
-                st.warning("Click Delete again to confirm.")
-            elif st.session_state.confirm_delete:
-                # Delete photo if present
-                photo_path = plant.get("photo_path")
-                if photo_path:
-                    try:
-                        supabase.storage.from_(BUCKET).remove([photo_path])[0]
-                    except Exception:
-                        pass  # ignore storage errors
 
-                # Delete row
-                supabase.table("plants").delete().eq("id", plant["id"]).execute()  # [web:332]
-                st.success("Plant deleted.")
-                st.session_state.selected_id = None
-                st.session_state.mode = "view"
-                st.session_state.page = "Overview"
-                st.session_state.confirm_delete = False
-                st.rerun()
+        with colC:
+            if st.button("🗑 Delete", use_container_width=True):
+                if "confirm_delete" not in st.session_state:
+                    st.session_state.confirm_delete = True
+                    st.warning("Click Delete again to confirm.")
+                elif st.session_state.confirm_delete:
+                    photo_path = plant.get("photo_path")
+                    if photo_path:
+                        try:
+                            supabase.storage.from_(BUCKET).remove([photo_path])
+                        except Exception:
+                            pass
+
+                    supabase.table("plants").delete().eq("id", plant["id"]).execute()  # [web:332]
+                    st.success("Plant deleted.")
+                    st.session_state.selected_id = None
+                    st.session_state.mode = "view"
+                    st.session_state.page = "Overview"
+                    st.session_state.confirm_delete = False
+                    st.rerun()
+
+    else:  # mode == "edit"
+            # 2 buttons: Save changes, Delete
+        colA, colB = st.columns(2)
+
+        with colA:
+            if st.button("💾 Save changes", use_container_width=True):
+                    updates = {
+                        "name": new_name,
+                        "description": new_desc,
+                        "last_watered": str(new_date),
+                        "watering_frequency_days": int(new_freq) if new_freq else None,
+                    }
+                    if new_file is not None:
+                        from datetime import datetime as dt
+
+                        ext = new_file.name.split(".")[-1].lower()
+                        safe_name = new_name.lower().replace(" ", "_")
+                        photo_path_new = f"{safe_name}_{dt.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
+                        supabase.storage.from_(BUCKET).upload(
+                            photo_path_new,
+                            new_file.read(),
+                        )
+                        updates["photo_path"] = photo_path_new
+
+                    supabase.table("plants").update(updates).eq(
+                        "id", plant["id"]
+                    ).execute()
+                    st.success("Changes saved!")
+                    st.session_state.mode = "view"
+                    st.rerun()
+
+            with colB:
+                if st.button("🗑 Delete", use_container_width=True):
+                    if "confirm_delete" not in st.session_state:
+                        st.session_state.confirm_delete = True
+                        st.warning("Click Delete again to confirm.")
+                    elif st.session_state.confirm_delete:
+                        photo_path = plant.get("photo_path")
+                        if photo_path:
+                            try:
+                                supabase.storage.from_(BUCKET).remove([photo_path])
+                            except Exception:
+                                pass
+
+                        supabase.table("plants").delete().eq("id", plant["id"]).execute()  # [web:332]
+                        st.success("Plant deleted.")
+                        st.session_state.selected_id = None
+                        st.session_state.mode = "view"
+                        st.session_state.page = "Overview"
+                        st.session_state.confirm_delete = False
+                        st.rerun()    
