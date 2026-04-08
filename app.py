@@ -126,7 +126,7 @@ if st.session_state.page == "Overview":
                         st.markdown(f"**🔴 {name}**")
                     elif status_color == "yellow":
                         st.markdown(f"**🟡 {name}**")
-                    else status_color == "green":
+                    else:
                         st.markdown(f"**🟢 {name}**")
 
                     st.write(f"Last watered: {last_display}")
