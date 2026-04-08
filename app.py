@@ -416,32 +416,41 @@ elif st.session_state.page == "Plant Details":
 
         with colA:
             if st.button("💾 Save changes", use_container_width=True):
-                    updates = {
-                        "name": new_name,
-                        "description": new_desc,
-                        "last_watered": str(new_date),
-                        "watering_frequency_days": int(new_freq) if new_freq else None,
-                        "takes_shower": new_takes_shower,
-                        "last_showered": str(new_last_showered) if new_last_showered else None,
-                    }
-                    if new_file is not None:
-                        from datetime import datetime as dt
+                updates = {
+                    "name": new_name,
+                    "description": new_desc,
+                    "last_watered": str(new_date),
+                    "watering_frequency_days": int(new_freq) if new_freq else None,
+                    "takes_shower": new_takes_shower,
+                    "last_showered": str(new_last_showered) if new_last_showered else None,
+                }
 
-                        ext = new_file.name.split(".")[-1].lower()
-                        safe_name = new_name.lower().replace(" ", "_")
-                        photo_path_new = f"{safe_name}_{dt.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-                        supabase.storage.from_(BUCKET).upload(
+                if new_file is not None:
+                    from datetime import datetime as dt
+
+                    ext = new_file.name.split(".")[-1].lower()
+                    safe_name = new_name.lower().replace(" ", "_")
+                    photo_path_new = f"{safe_name}_{dt.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
+
+                    try:
+                        file_bytes = new_file.getvalue()
+                        res = supabase.storage.from_(BUCKET).upload(
                             photo_path_new,
-                            new_file.read(),
+                            file_bytes,
+                            {"upsert": True},  # allow overwrite if path already exists
                         )
                         updates["photo_path"] = photo_path_new
+                    except Exception as e:
+                        st.error(f"Photo upload failed: {e}")
+                        # optionally keep old photo_path by NOT setting updates["photo_path"]
 
-                    supabase.table("plants").update(updates).eq(
-                        "id", plant["id"]
-                    ).execute()
+                try:
+                    supabase.table("plants").update(updates).eq("id", plant["id"]).execute()
                     st.success("Changes saved!")
                     st.session_state.mode = "view"
                     st.rerun()
+                except Exception as e:
+                    st.error(f"Error updating plant: {e}")
 
             with colB:
                 if st.button("🗑 Delete", use_container_width=True):
