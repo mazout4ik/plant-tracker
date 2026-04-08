@@ -430,10 +430,15 @@ elif st.session_state.page == "Plant Details":
                         ext = new_file.name.split(".")[-1].lower()
                         safe_name = new_name.lower().replace(" ", "_")
                         photo_path_new = f"{safe_name}_{dt.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
-                        supabase.storage.from_(BUCKET).upload(photo_path_new, new_file.read(),)
+                        supabase.storage.from_(BUCKET).upload(
+                            photo_path_new,
+                            new_file.read(),
+                        )
                         updates["photo_path"] = photo_path_new
 
-                    supabase.table("plants").update(updates).eq("id", plant["id"]).execute()
+                    supabase.table("plants").update(updates).eq(
+                        "id", plant["id"]
+                    ).execute()
                     st.success("Changes saved!")
                     st.session_state.mode = "view"
                     st.rerun()
