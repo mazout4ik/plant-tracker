@@ -369,3 +369,28 @@ elif st.session_state.page == "Plant Details":
                 ).eq("id", plant["id"]).execute()
                 st.success("Watering date updated!")
                 st.rerun()
+    
+    # Delete button (always visible)
+    with colD:
+        if st.button("🗑 Delete", use_container_width=True):
+            # Optional: simple confirm toggle
+            if "confirm_delete" not in st.session_state:
+                st.session_state.confirm_delete = True
+                st.warning("Click Delete again to confirm.")
+            elif st.session_state.confirm_delete:
+                # Delete photo if present
+                photo_path = plant.get("photo_path")
+                if photo_path:
+                    try:
+                        supabase.storage.from_(BUCKET).remove([photo_path])[0]
+                    except Exception:
+                        pass  # ignore storage errors
+
+                # Delete row
+                supabase.table("plants").delete().eq("id", plant["id"]).execute()  # [web:332]
+                st.success("Plant deleted.")
+                st.session_state.selected_id = None
+                st.session_state.mode = "view"
+                st.session_state.page = "Overview"
+                st.session_state.confirm_delete = False
+                st.rerun()
