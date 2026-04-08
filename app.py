@@ -327,7 +327,11 @@ elif st.session_state.page == "Plant Details":
 
         else:
             st.subheader(plant["name"])
-            st.write(f"**Description:** {plant.get('description') or 'No description'}")
+
+            desc_text = plant.get("description") or "No description"
+            st.markdown("**Description:**")
+            st.text(desc_text)
+
             freq = plant.get("watering_frequency_days")
             st.write(
                 f"**Watering frequency:** {freq} days" if freq else "**Watering frequency:** not set"
