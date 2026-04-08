@@ -97,14 +97,14 @@ if st.session_state.page == "Overview":
                         status_color = "red"
                     elif (next_due - today).days <= 1:
                         status_label = "Due soon"
-                        status_color = "orange"
+                        status_color = "yellow"
 
                 except Exception:
                     pass # if parsing fails, just keep status
 
             elif freq:
                 status_label = "Set frequency but never watered"
-                status_color = "orange"
+                status_color = "yellow"
             
             last_display = last or "Never"
 
@@ -124,8 +124,8 @@ if st.session_state.page == "Overview":
                     # Highlight name if overdue/due
                     if status_color == "red":
                         st.markdown(f"**🔴 {name}**")
-                    elif status_color == "orange":
-                        st.markdown(f"**🟠 {name}**")
+                    elif status_color == "yellow":
+                        st.markdown(f"**🟡 {name}**")
                     else:
                         st.markdown(f"**{name}**")
 
