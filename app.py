@@ -57,7 +57,7 @@ page = st.session_state.page
 
 plants = (
     supabase.table("plants")
-    .select("id, name, description, last_watered, photo_path, watering_frequency_days")
+    .select("id, name, description, last_watered, photo_path, watering_frequency_days, takes_shower, last_showered")
     .order("name")
     .execute()
 ).data
@@ -183,6 +183,15 @@ elif page == "Add Plant":
     value=7,
     step=1,
 )
+    takes_shower = st.checkbox("Takes showers", value=False)
+
+    last_showered = None
+    if takes_shower:
+        last_showered = st.date_input(
+            "Last showered date",
+            value=datetime.now().date(),
+         key="add_last_showered",
+        )
 
     uploaded_file = st.file_uploader(
         "📸 Take/upload photo (you can use phone camera)",
@@ -222,6 +231,8 @@ elif page == "Add Plant":
                     "description": description,
                     "photo_path": photo_path,
                     "watering_frequency_days": int(watering_frequency_days) if watering_frequency_days else None,
+                    "takes_shower": takes_shower,
+                    "last_showered": str(last_showered) if last_showered else None,
                 }
                 supabase.table("plants").insert(data).execute()
                 st.success("🌱 Plant added!")
@@ -285,6 +296,35 @@ elif st.session_state.page == "Plant Details":
                 value=plant.get("watering_frequency_days") or 7,
                 step=1,
             )
+            new_takes_shower = st.checkbox(
+                "Takes showers",
+                value=plant.get("takes_shower") or False,
+            )
+
+            if new_takes_shower:
+                default_last_showered = plant.get("last_showered")
+                if isinstance(default_last_showered, str):
+                    try:
+                        default_last_showered = datetime.strptime(
+                            default_last_showered, "%Y-%m-%d"
+                        ).date()
+                    except Exception:
+                        default_last_showered = datetime.now().date()
+                elif default_last_showered is None:
+                    default_last_showered = datetime.now().date()
+
+                new_last_showered = st.date_input(
+                    "Last showered date",
+                    value=default_last_showered,
+                    key="edit_last_showered",
+                )
+            else:
+                new_last_showered = None
+
+
+
+
+
         else:
             st.subheader(plant["name"])
             st.write(f"**Description:** {plant.get('description') or 'No description'}")
@@ -292,6 +332,15 @@ elif st.session_state.page == "Plant Details":
             st.write(
                 f"**Watering frequency:** {freq} days" if freq else "**Watering frequency:** not set"
             )
+
+            takes_shower = plant.get("takes_shower")
+            if takes_shower:
+                st.write("**Takes showers:** yes")
+                ls = plant.get("last_showered")
+                if ls:
+                    st.write(f"**Last showered:** {ls}")
+            else:
+                st.write("**Takes showers:** no")
 
         st.write(f"**Last watered:** {plant.get('last_watered') or 'Never'}")
 
@@ -372,6 +421,8 @@ elif st.session_state.page == "Plant Details":
                         "description": new_desc,
                         "last_watered": str(new_date),
                         "watering_frequency_days": int(new_freq) if new_freq else None,
+                        "takes_shower": new_takes_shower,
+                        "last_showered": str(new_last_showered) if new_last_showered else None,
                     }
                     if new_file is not None:
                         from datetime import datetime as dt
