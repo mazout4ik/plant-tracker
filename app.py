@@ -435,9 +435,9 @@ elif st.session_state.page == "Plant Details":
                     try:
                         file_bytes = new_file.getvalue()
                         res = supabase.storage.from_(BUCKET).upload(
-                            photo_path_new,
-                            file_bytes,
-                            {"upsert": True},  # allow overwrite if path already exists
+                            path=photo_path_new,           # note explicit keyword
+                            file=file_bytes,               # bytes to upload
+                            file_options={"upsert": True}, # allow overwrite if same name
                         )
                         updates["photo_path"] = photo_path_new
                     except Exception as e:
