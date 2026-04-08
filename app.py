@@ -156,7 +156,7 @@ if st.session_state.page == "Overview":
         with col_text:
             st.markdown("**Add plant**")
             
-        add_clicked = st.form_submit_button("Create a new plant entry", use_container_width=True)
+        add_clicked = st.form_submit_button("Add a new plant", use_container_width=True)
 
     if add_clicked:
         st.session_state.page = "Add Plant"
