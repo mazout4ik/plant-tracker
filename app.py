@@ -3,6 +3,8 @@ from datetime import datetime
 from PIL import Image
 import io
 from supabase import create_client, Client
+from datetime import datetime, date, timedelta
+
 
 # Load logo
 logo = Image.open("logo.png")
@@ -64,6 +66,8 @@ plants = (
 
 #-----------------------------------------------------------------------------
 # ----------------- OVERVIEW PAGE -----------------
+#-----------------------------------------------------------------------------
+
 if st.session_state.page == "Overview":
     st.header("🏠🌱🌸🌼")
     st.subheader("My Plants")
@@ -76,6 +80,35 @@ if st.session_state.page == "Overview":
             name = p.get("name", "No name")
             last = p.get("last_watered") or "Never"
             photo_path = p.get("photo_path")
+            freq = p.get("watering_frequency_days")
+
+            # --- watering status ---
+            status_label = ""
+            status_color = ""
+
+            if last and freq:
+                try:
+                    last_dt = datetime.strptime(last, "%Y-%m-%d").date()
+                    next_due = last_dt + timedelta(days=freq)
+                    today = date.today()
+                
+                    if today > next_due:
+                        status_label = "Overdue for watering"
+                        status_color = "red"
+                    elif (next_due - today).days <= 1:
+                        status_label = "Due soon"
+                        status_color = "orange"
+
+                except Exception:
+                    pass # if parsing fails, just keep status
+
+            elif freq:
+                status_label = "Set frequency but never watered"
+                status_color = "orange"
+            
+            last_display = last or "Never"
+
+
 
             with st.form(key=f"plant_form_{plant_id}"):
                 col_img, col_text = st.columns([1, 3])
@@ -88,11 +121,21 @@ if st.session_state.page == "Overview":
                         st.write("🪴")
 
                 with col_text:
-                    st.markdown(f"**{name}**")
-                    st.write(f"Last watered: {last}")
-                    freq = p.get("watering_frequency_days")
+                    # Highlight name if overdue/due
+                    if status_color == "red":
+                        st.markdown(f"**🔴 {name}**")
+                    elif status_color == "orange":
+                        st.markdown(f"**🟠 {name}**")
+                    else:
+                        st.markdown(f"**{name}**")
+
+                    st.write(f"Last watered: {last_display}")
+
                     if freq:
                         st.caption(f"Every {freq} days")
+
+                    if status_label:
+                        st.caption(status_label)
                     
 
                 submitted = st.form_submit_button("See details", use_container_width=True)
