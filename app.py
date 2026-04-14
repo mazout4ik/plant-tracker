@@ -289,6 +289,51 @@ elif st.session_state.page == "Plant Details":
     plant = rows[0]
     mode = st.session_state.get("mode", "view")
 
+    # Shower status
+    today = date.today()
+
+    takes_shower = plant.get("takes_shower")
+    last_showered_raw = plant.get("last_showered")
+
+    last_showered_date = None
+    if isinstance(last_showered_raw, str):
+        try:
+            last_showered_date = datetime.strptime(last_showered_raw, "%Y-%m-%d").date()
+        except Exception:
+            last_showered_date = None
+    elif isinstance(last_showered_raw, date):
+        last_showered_date = last_showered_raw
+
+    #shower frequency
+    def shower_frequency_for_month(d: date) -> int:
+        # June, July, August => weekly, else monthly (~30 days)
+        if d.month in (6, 7, 8):
+            return 7
+        return 30
+
+    # Next due date and status
+    shower_status_label = ""
+    shower_status_color = ""  # "red"/"yellow"/"green"
+
+    if takes_shower:
+        base_date = last_showered_date or today
+        freq_days = shower_frequency_for_month(today)
+        next_shower_due = base_date + timedelta(days=freq_days)
+
+        if today > next_shower_due:
+            shower_status_label = "Shower overdue"
+            shower_status_color = "red"
+        elif (next_shower_due - today).days <= 1:
+            shower_status_label = "Shower due soon"
+            shower_status_color = "yellow"
+        else:
+            shower_status_label = f"Next shower due on {next_shower_due}"
+            shower_status_color = "green"
+
+
+
+
+
     col1, col2 = st.columns(2)
 
     # ----- LEFT: text fields -----
@@ -349,11 +394,23 @@ elif st.session_state.page == "Plant Details":
             takes_shower = plant.get("takes_shower")
             if takes_shower:
                 st.write("**Takes showers:** yes")
-                ls = plant.get("last_showered")
-                if ls:
-                    st.write(f"**Last showered:** {ls}")
-            else:
+     
+                if last_showered_date:
+                    st.write(f"**Last showered:** {last_showered_date}")
+                else:
+                    st.write("**Last showered:** not set")
+
+            if shower_status_label:
+                if shower_status_color == "red":
+                    st.error(shower_status_label)
+                elif shower_status_color == "yellow":
+                    st.warning(shower_status_label)
+                else:
+                    st.info(shower_status_label)
+            
+            else: 
                 st.write("**Takes showers:** no")
+
 
         st.write(f"**Last watered:** {plant.get('last_watered') or 'Never'}")
 
