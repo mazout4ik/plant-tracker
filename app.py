@@ -223,8 +223,10 @@ elif page == "Add Plant":
                     )
                     st.caption(f"DEBUG upload add: {res}")
                 except Exception as e:
-                    st.error(f"Photo upload failed: {e}")
-                    photo_path = None
+                    #st.error(f"Photo upload failed: {e}")
+                    #photo_path = None
+                    st.error("Photo upload failed (see debug below).")
+                    st.code(repr(e))
 
             try:
                 data = {
