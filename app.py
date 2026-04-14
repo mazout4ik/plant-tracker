@@ -202,6 +202,8 @@ elif page == "Add Plant":
         image = Image.open(uploaded_file)
         st.image(image, caption="Preview", use_column_width=True)
 
+   
+   
     if st.button("💾 Save Plant", use_container_width=True):
         if not name:
             st.error("Name is required.")
@@ -219,7 +221,7 @@ elif page == "Add Plant":
                     res = supabase.storage.from_(BUCKET).upload(
                         photo_path,
                         file_bytes,
-                        {"upsert": True},        # file_options
+                        #{"upsert": True},        # file_options
                     )
                     st.caption(f"DEBUG upload add: {res}")
                 except Exception as e:
@@ -242,6 +244,10 @@ elif page == "Add Plant":
                 st.rerun()
             except Exception as e:
                 st.error(f"Error saving plant: {e}")
+
+
+
+                
 
     st.info("💡 Tip: On mobile, choose 'Camera' when uploading a photo.")
 
@@ -444,7 +450,7 @@ elif st.session_state.page == "Plant Details":
                         res = supabase.storage.from_(BUCKET).upload(
                             path=photo_path_new,           # note explicit keyword
                             file=file_bytes,               # bytes to upload
-                            file_options={"upsert": True}, # allow overwrite if same name
+                            file_options={"upsert": "true"}, # allow overwrite if same name
                         )
                         updates["photo_path"] = photo_path_new
                     except Exception as e:
