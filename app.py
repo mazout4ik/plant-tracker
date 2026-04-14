@@ -212,18 +212,19 @@ elif page == "Add Plant":
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 ext = uploaded_file.name.split(".")[-1].lower()
                 safe_name = name.lower().replace(" ", "_")
-                photo_path = f"{safe_name}_{timestamp}.{ext}"
+                photo_path_new = f"{safe_name}_{dt.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
 
                 try:
-                    file_bytes = uploaded_file.getvalue()
+                    file_bytes = new_file.getvalue()
                     res = supabase.storage.from_(BUCKET).upload(
-                        photo_path,
-                        file_bytes,
+                        photo_path_new,          # path
+                        file_bytes,              # file (bytes)
+                        {"upsert": True},        # file_options
                     )
-                    st.caption(f"DEBUG upload add: {res}")
+                    updates["photo_path"] = photo_path_new
                 except Exception as e:
                     st.error(f"Photo upload failed: {e}")
-                    photo_path = None
+                    #photo_path = None
 
             try:
                 data = {
