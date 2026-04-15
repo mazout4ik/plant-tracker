@@ -93,17 +93,17 @@ if st.session_state.page == "Overview":
                     today = date.today()
                 
                     if today > next_due:
-                        status_label = "Overdue for watering"
+                        #status_label = "Overdue for watering"
                         status_color = "red"
                     elif (next_due - today).days <= 1:
-                        status_label = "Due soon"
+                        #status_label = "Due soon"
                         status_color = "yellow"
 
                 except Exception:
                     pass # if parsing fails, just keep status
 
             elif freq:
-                status_label = "Set frequency but never watered"
+                #status_label = "Set frequency but never watered"
                 status_color = "yellow"
             
             last_display = last or "Never"
