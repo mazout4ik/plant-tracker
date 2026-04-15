@@ -109,6 +109,39 @@ if st.session_state.page == "Overview":
             last_display = last or "Never"
 
 
+                # --- shower status ---
+            takes_shower = p.get("takes_shower")
+            last_showered_raw = p.get("last_showered")
+
+            last_showered_date = None
+            if isinstance(last_showered_raw, str):
+                try:
+                    last_showered_date = datetime.strptime(last_showered_raw, "%Y-%m-%d").date()
+                except Exception:
+                    last_showered_date = None
+
+            def shower_frequency_for_month(d: date) -> int:
+                # June, July, August => weekly, else monthly (~30 days)
+                if d.month in (6, 7, 8):
+                    return 7
+                return 30
+
+            shower_status_line = ""
+
+            if takes_shower:
+                today = date.today()
+                base_date = last_showered_date or today
+                freq_days = shower_frequency_for_month(today)
+                next_shower_due = base_date + timedelta(days=freq_days)
+
+                if today > next_shower_due:
+                    shower_status_line = "Shower: overdue"
+                elif (next_shower_due - today).days <= 1:
+                    shower_status_line = "Shower: due soon"
+                else:
+                    shower_status_line = f"Shower: next on {next_shower_due}"
+            else:
+                shower_status_line = ""
 
             with st.form(key=f"plant_form_{plant_id}"):
                 col_img, col_text = st.columns([1, 3])
@@ -136,6 +169,10 @@ if st.session_state.page == "Overview":
 
                     if status_label:
                         st.caption(status_label)
+
+                    # NEW: shower status line
+                    if shower_status_line:
+                        st.caption(shower_status_line)
                     
 
                 submitted = st.form_submit_button("See details", use_container_width=True)
