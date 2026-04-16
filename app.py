@@ -255,7 +255,7 @@ elif page == "Add Plant":
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 ext = uploaded_file.name.split(".")[-1].lower()
                 safe_name = name.lower().replace(" ", "_")
-                photo_path = f"{safe_name}_{dt.now().strftime('%Y%m%d_%H%M%S')}.{ext}"
+                photo_path = f"{safe_name}_{timestamp}.{ext}"
 
                 try:
                     file_bytes = uploaded_file.getvalue()
