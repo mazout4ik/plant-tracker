@@ -216,7 +216,15 @@ elif page == "Add Plant":
 
     name = st.text_input("Plant Name")
     description = st.text_area("Description", height=100)
-    location = st.text_input("Location / room", max_chars=100)
+    LOCATION_OPTIONS = ["living-room", "kitchen", "balcony", "entryway"]
+
+    location = st.selectbox(
+        "Location / room",
+        options=LOCATION_OPTIONS,
+        index=None,  # no preselection
+        placeholder="Choose a location",
+    )
+    
     watering_frequency_days = st.number_input(
     "Watering frequency (days)",
     min_value=1,
@@ -385,10 +393,23 @@ elif st.session_state.page == "Plant Details":
             new_desc = st.text_area(
                 "Description", value=plant.get("description") or "", height=100
             )
-            new_location = st.text_input(
+            
+            LOCATION_OPTIONS = ["living-room", "kitchen", "balcony", "entryway"]
+
+            current_location = plant.get("location")
+            if current_location in LOCATION_OPTIONS:
+                default_index = LOCATION_OPTIONS.index(current_location)
+            else:
+                default_index = None
+
+            new_location = st.selectbox(
                 "Location / room",
-                value=plant.get("location") or "",
+                options=LOCATION_OPTIONS,
+                index=default_index,
+                placeholder="Choose a location",
+                key="edit_location",
             )
+
             new_freq = st.number_input(
                 "Watering frequency (days)",
                 min_value=1,
