@@ -71,11 +71,25 @@ plants = (
 if st.session_state.page == "Overview":
     st.header("🏠🌱🌸🌼")
     st.subheader("My Plants")
+    LOCATION_OPTIONS = ["living-room", "kitchen", "balcony", "entryway"]
 
-    if not plants:
+    location_filter = st.selectbox(
+        "Filter by location",
+        options=["All"] + LOCATION_OPTIONS,
+        index=0,
+    )
+
+
+    filtered_plants = plants
+    if location_filter != "All":
+        filtered_plants = [p for p in plants if p.get("location") == location_filter]
+
+
+
+    if not filtered_plants:
         st.info("No plants yet. Add your first plant below.")
     else:
-        for p in plants:
+        for p in filtered_plants:
             plant_id = p["id"]
             name = p.get("name", "No name")
             last = p.get("last_watered") or "Never"
