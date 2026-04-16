@@ -48,6 +48,11 @@ with top_col1:
             st.rerun()
 
 
+with top_col2:
+    if st.button("FAQ", key="faq_button", use_container_width=False):
+        st.session_state.page = "FAQ"
+        st.rerun()
+
 
 page = st.session_state.page
 
@@ -630,3 +635,123 @@ elif st.session_state.page == "Plant Details":
                         st.session_state.page = "Overview"
                         st.session_state.confirm_delete = False
                         st.rerun()    
+
+
+
+
+#-----------------------------------------------------------------------------
+# ---------- FAQ ----------
+#-----------------------------------------------------------------------------
+elif st.session_state.page == "FAQ":
+    st.header("❓ FAQ")
+
+    with st.expander("1. How do I add a new plant?", expanded=False):
+        st.markdown(
+            """
+- Go to the Overview screen (use the ← arrow if needed).
+- Scroll to the bottom and click the **Add plant** card.
+- Fill in the fields:
+  - **Plant Name** (required)
+  - **Description** (optional)
+  - **Location / room** (living-room, kitchen, balcony, entryway)
+  - **Watering frequency (days)**
+  - **Takes showers** and **Last showered date** (if enabled)
+- Optionally upload a photo and click **💾 Save Plant**.
+"""
+        )
+
+    with st.expander("2. How do I see details for a plant?"):
+        st.markdown(
+            """
+- On the Overview screen, each plant appears as a card.
+- Click **See details** on a card to open the **Plant Details** screen.
+"""
+        )
+
+    with st.expander("3. What do the colors on plant names mean?"):
+        st.markdown(
+            """
+- **🔴 Red** – watering is overdue.
+- **🟡 Yellow** – watering is due soon or frequency is set but never watered.
+- **🟢 Green** – watering is on track.
+
+Colors are based on **Last watered** plus the **watering frequency** in days.
+"""
+        )
+
+    with st.expander("4. How do I filter plants by room?"):
+        st.markdown(
+            """
+- On the Overview screen, use the **Filter by location** dropdown.
+- Choose **All** or a specific room (living-room, kitchen, balcony, entryway).
+- The list updates to show only plants in that location.
+"""
+        )
+
+    with st.expander("5. How does the shower reminder work?"):
+        st.markdown(
+            """
+If **Takes showers** is enabled:
+
+- From **September to May**: reminder roughly every **30 days**.
+- In **June, July, August**: reminder every **7 days**.
+
+The app uses the **Last showered** date (or today if empty) and shows:
+
+- **Shower overdue**
+- **Shower due soon**
+- **Next shower due on YYYY-MM-DD**
+
+You see this:
+- As a line on the Overview card.
+- As a colored message on the Plant Details screen.
+"""
+        )
+
+    with st.expander("6. How do I edit a plant?"):
+        st.markdown(
+            """
+- Open the plant in **Plant Details**.
+- Click **✏️ Edit**.
+- Change any fields (name, description, location, frequency, shower settings, photo).
+- Adjust **Next watering date** if needed.
+- Click **💾 Save changes**.
+"""
+        )
+
+    with st.expander("7. How do I update only the watering date?"):
+        st.markdown(
+            """
+- On **Plant Details** in view mode:
+  - Choose a new **Next watering date**.
+  - Click **✅ Update watering date**.
+"""
+        )
+
+    with st.expander("8. How do I change the photo for a plant?"):
+        st.markdown(
+            """
+- Open **Plant Details**.
+- Click **✏️ Edit**.
+- On the right, use **Replace photo (optional)** to upload a new image.
+- Click **💾 Save changes**.
+"""
+        )
+
+    with st.expander("9. How do I delete a plant?"):
+        st.markdown(
+            """
+- On **Plant Details**:
+  - In view mode: click **🗑 Delete** (bottom right).
+  - In edit mode: click **🗑 Delete** next to **Save changes**.
+- Confirm when asked.
+- The plant and its photo (if possible) are removed, and you return to Overview.
+"""
+        )
+
+    with st.expander("10. How do I go back to the plant list?"):
+        st.markdown(
+            """
+- Click the **←** arrow at the top-left to return to the Overview list.
+"""
+        )
