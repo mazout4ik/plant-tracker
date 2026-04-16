@@ -57,7 +57,7 @@ page = st.session_state.page
 
 plants = (
     supabase.table("plants")
-    .select("id, name, description, last_watered, photo_path, watering_frequency_days, takes_shower, last_showered")
+    .select("id, name, description, last_watered, photo_path, watering_frequency_days, takes_shower, last_showered, location")
     .order("name")
     .execute()
 ).data
@@ -81,6 +81,7 @@ if st.session_state.page == "Overview":
             last = p.get("last_watered") or "Never"
             photo_path = p.get("photo_path")
             freq = p.get("watering_frequency_days")
+            location = p.get("location")
 
             # --- watering status ---
             status_label = ""
@@ -154,6 +155,8 @@ if st.session_state.page == "Overview":
                         st.write("🪴")
 
                 with col_text:
+                    if location:
+                        st.caption(f"Location: {location}")
                     # Highlight name if overdue/due
                     if status_color == "red":
                         st.markdown(f"**🔴 {name}**")
@@ -213,6 +216,7 @@ elif page == "Add Plant":
 
     name = st.text_input("Plant Name")
     description = st.text_area("Description", height=100)
+    location = st.text_input("Location / room", max_chars=100)
     watering_frequency_days = st.number_input(
     "Watering frequency (days)",
     min_value=1,
@@ -275,6 +279,7 @@ elif page == "Add Plant":
                     "watering_frequency_days": int(watering_frequency_days) if watering_frequency_days else None,
                     "takes_shower": takes_shower,
                     "last_showered": str(last_showered) if last_showered else None,
+                    "location": location or None,
                 }
                 supabase.table("plants").insert(data).execute()
                 st.success("🌱 Plant added!")
@@ -380,6 +385,10 @@ elif st.session_state.page == "Plant Details":
             new_desc = st.text_area(
                 "Description", value=plant.get("description") or "", height=100
             )
+            new_location = st.text_input(
+                "Location / room",
+                value=plant.get("location") or "",
+            )
             new_freq = st.number_input(
                 "Watering frequency (days)",
                 min_value=1,
@@ -422,6 +431,12 @@ elif st.session_state.page == "Plant Details":
             desc_text = plant.get("description") or "No description"
             st.markdown("**Description:**")
             st.text(desc_text)
+
+            location = plant.get("location")
+            if location:
+                st.write(f"**Location:** {location}")
+
+
 
             freq = plant.get("watering_frequency_days")
             st.write(
@@ -530,6 +545,7 @@ elif st.session_state.page == "Plant Details":
                     "watering_frequency_days": int(new_freq) if new_freq else None,
                     "takes_shower": new_takes_shower,
                     "last_showered": str(new_last_showered) if new_last_showered else None,
+                    "location": new_location or None,
                 }
 
                 if new_file is not None:
