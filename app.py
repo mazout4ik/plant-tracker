@@ -5,14 +5,13 @@ import io
 from supabase import create_client, Client
 from datetime import datetime, date, timedelta
 
-
 # Load logo
 logo = Image.open("logo.png")
 
 # ---------- Page config ----------
 st.set_page_config(
     page_title="Plant Tracker",
-    page_icon=logo,      # use your logo here
+    page_icon=logo,
     layout="wide",
 )
 
@@ -23,40 +22,55 @@ BUCKET = "plant-photos"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# ---------- Navigation helpers (URL-based) ----------
+params = st.query_params
+page = params.get("page", ["overview"])[0]  # 'overview', 'add', 'details', 'faq'
+
+
+def go_overview():
+    st.query_params.clear()
+    st.query_params.update({"page": "overview"})
+    st.rerun()
+
+
+def go_add():
+    st.query_params.clear()
+    st.query_params.update({"page": "add"})
+    st.rerun()
+
+
+def go_details(plant_id: int):
+    st.query_params.clear()
+    st.query_params.update({"page": "details", "plant_id": str(plant_id)})
+    st.rerun()
+
+
+def go_faq():
+    st.query_params.clear()
+    st.query_params.update({"page": "faq"})
+    st.rerun()
+
+
 # ---------- UI state (no sidebar) ----------
 if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
 if "mode" not in st.session_state:
     st.session_state.mode = "view"
-if "page" not in st.session_state:
-    st.session_state.page = "Overview"
-
-page = st.session_state.page
-
-
 
 # Top navigation buttons
 top_col1, top_col2 = st.columns([1, 1])
 
 with top_col1:
     # Only show back button when NOT on Overview
-    if st.session_state.page != "Overview":
-        if st.button("←", key="back_to_list", width="content"):
-            st.session_state.page = "Overview"
+    if page != "overview":
+        if st.button("←", key="back_to_list", use_container_width=False):
             st.session_state.selected_id = None
             st.session_state.mode = "view"
-            st.rerun()
-
+            go_overview()
 
 with top_col2:
     if st.button("FAQ", key="faq_button", use_container_width=False):
-        st.session_state.page = "FAQ"
-        st.rerun()
-
-
-page = st.session_state.page
-
-
+        go_faq()
 
 ######################################################
 
@@ -67,16 +81,15 @@ plants = (
     .execute()
 ).data
 
+LOCATION_OPTIONS = ["living-room", "kitchen", "balcony", "entryway"]
 
 
 #-----------------------------------------------------------------------------
 # ----------------- OVERVIEW PAGE -----------------
 #-----------------------------------------------------------------------------
-
-if st.session_state.page == "Overview":
+if page == "overview":
     st.header("🏠🌱🌸🌼")
     st.subheader("My Plants")
-    LOCATION_OPTIONS = ["living-room", "kitchen", "balcony", "entryway"]
 
     location_filter = st.selectbox(
         "Filter by location",
@@ -84,12 +97,9 @@ if st.session_state.page == "Overview":
         index=0,
     )
 
-
     filtered_plants = plants
     if location_filter != "All":
         filtered_plants = [p for p in plants if p.get("location") == location_filter]
-
-
 
     if not filtered_plants:
         st.info("No plants yet. Add your first plant below.")
@@ -111,32 +121,33 @@ if st.session_state.page == "Overview":
                     last_dt = datetime.strptime(last, "%Y-%m-%d").date()
                     next_due = last_dt + timedelta(days=freq)
                     today = date.today()
-                
+
                     if today > next_due:
-                        #status_label = "Overdue for watering"
+                        # status_label = "Overdue for watering"
                         status_color = "red"
                     elif (next_due - today).days <= 1:
-                        #status_label = "Due soon"
+                        # status_label = "Due soon"
                         status_color = "yellow"
 
                 except Exception:
-                    pass # if parsing fails, just keep status
+                    pass  # if parsing fails, just keep status
 
             elif freq:
-                #status_label = "Set frequency but never watered"
+                # status_label = "Set frequency but never watered"
                 status_color = "yellow"
-            
+
             last_display = last or "Never"
 
-
-                # --- shower status ---
+            # --- shower status ---
             takes_shower = p.get("takes_shower")
             last_showered_raw = p.get("last_showered")
 
             last_showered_date = None
             if isinstance(last_showered_raw, str):
                 try:
-                    last_showered_date = datetime.strptime(last_showered_raw, "%Y-%m-%d").date()
+                    last_showered_date = datetime.strptime(
+                        last_showered_raw, "%Y-%m-%d"
+                    ).date()
                 except Exception:
                     last_showered_date = None
 
@@ -195,15 +206,13 @@ if st.session_state.page == "Overview":
                     # NEW: shower status line
                     if shower_status_line:
                         st.caption(shower_status_line)
-                    
 
                 submitted = st.form_submit_button("See details", use_container_width=True)
 
             if submitted:
-                st.session_state.page = "Plant Details"
                 st.session_state.selected_id = plant_id
                 st.session_state.mode = "view"
-                st.rerun()
+                go_details(plant_id)
 
     # Add plant card only on Overview
     with st.form(key="add_plant_card"):
@@ -214,28 +223,23 @@ if st.session_state.page == "Overview":
 
         with col_text:
             st.markdown("**Add plant**")
-            
+
         add_clicked = st.form_submit_button("Add a new plant", use_container_width=True)
 
     if add_clicked:
-        st.session_state.page = "Add Plant"
         st.session_state.selected_id = None
         st.session_state.mode = "view"
-        st.rerun()
-
-
-
+        go_add()
 
 
 #-----------------------------------------------------------------------------
 # ---------- Add Plant ----------
 #-----------------------------------------------------------------------------
-elif page == "Add Plant":
+elif page == "add":
     st.header("➕ Add New Plant")
 
     name = st.text_input("Plant Name")
     description = st.text_area("Description", height=100)
-    LOCATION_OPTIONS = ["living-room", "kitchen", "balcony", "entryway"]
 
     location = st.selectbox(
         "Location / room",
@@ -243,14 +247,14 @@ elif page == "Add Plant":
         index=None,  # no preselection
         placeholder="Choose a location",
     )
-    
+
     watering_frequency_days = st.number_input(
-    "Watering frequency (days)",
-    min_value=1,
-    max_value=365,
-    value=7,
-    step=1,
-)
+        "Watering frequency (days)",
+        min_value=1,
+        max_value=365,
+        value=7,
+        step=1,
+    )
     takes_shower = st.checkbox("Takes showers", value=False)
 
     last_showered = None
@@ -258,7 +262,7 @@ elif page == "Add Plant":
         last_showered = st.date_input(
             "Last showered date",
             value=datetime.now().date(),
-         key="add_last_showered",
+            key="add_last_showered",
         )
 
     uploaded_file = st.file_uploader(
@@ -270,8 +274,6 @@ elif page == "Add Plant":
         image = Image.open(uploaded_file)
         st.image(image, caption="Preview", use_column_width=True)
 
-   
-   
     if st.button("💾 Save Plant", use_container_width=True):
         if not name:
             st.error("Name is required.")
@@ -289,12 +291,9 @@ elif page == "Add Plant":
                     res = supabase.storage.from_(BUCKET).upload(
                         photo_path,
                         file_bytes,
-                        #{"upsert": True},        # file_options
                     )
                     st.caption(f"DEBUG upload add: {res}")
                 except Exception as e:
-                    #st.error(f"Photo upload failed: {e}")
-                    #photo_path = None
                     st.error("Photo upload failed (see debug below).")
                     st.code(repr(e))
 
@@ -303,36 +302,35 @@ elif page == "Add Plant":
                     "name": name,
                     "description": description,
                     "photo_path": photo_path,
-                    "watering_frequency_days": int(watering_frequency_days) if watering_frequency_days else None,
+                    "watering_frequency_days": int(watering_frequency_days)
+                    if watering_frequency_days
+                    else None,
                     "takes_shower": takes_shower,
                     "last_showered": str(last_showered) if last_showered else None,
                     "location": location or None,
                 }
                 supabase.table("plants").insert(data).execute()
                 st.success("🌱 Plant added!")
-                st.rerun()
+                go_overview()
             except Exception as e:
                 st.error(f"Error saving plant: {e}")
 
-
-
-                
-
     st.info("💡 Tip: On mobile, choose 'Camera' when uploading a photo.")
-
-
-
-
 
 
 #-----------------------------------------------------------------------------
 # ---------- Plant Details ----------
 #-----------------------------------------------------------------------------
-elif st.session_state.page == "Plant Details":
+elif page == "details":
     st.header("📋 Plant Details")
 
-    # Debug info – you can remove later
-    #st.caption(f"DEBUG: selected_id={st.session_state.selected_id}")
+    # Determine selected plant from URL or session
+    plant_id_str = params.get("plant_id", [None])[0]
+    if plant_id_str is not None:
+        try:
+            st.session_state.selected_id = int(plant_id_str)
+        except ValueError:
+            st.session_state.selected_id = None
 
     if st.session_state.selected_id is None:
         st.warning("👈 Select a plant on the 'Overview' page first.")
@@ -367,13 +365,14 @@ elif st.session_state.page == "Plant Details":
     last_showered_date = None
     if isinstance(last_showered_raw, str):
         try:
-            last_showered_date = datetime.strptime(last_showered_raw, "%Y-%m-%d").date()
+            last_showered_date = datetime.strptime(
+                last_showered_raw, "%Y-%m-%d"
+            ).date()
         except Exception:
             last_showered_date = None
     elif isinstance(last_showered_raw, date):
         last_showered_date = last_showered_raw
 
-    #shower frequency
     def shower_frequency_for_month(d: date) -> int:
         # June, July, August => weekly, else monthly (~30 days)
         if d.month in (6, 7, 8):
@@ -399,10 +398,6 @@ elif st.session_state.page == "Plant Details":
             shower_status_label = f"Next shower due on {next_shower_due}"
             shower_status_color = "green"
 
-
-
-
-
     col1, col2 = st.columns(2)
 
     # ----- LEFT: text fields -----
@@ -410,10 +405,10 @@ elif st.session_state.page == "Plant Details":
         if mode == "edit":
             new_name = st.text_input("Name", value=plant["name"])
             new_desc = st.text_area(
-                "Description", value=plant.get("description") or "", height=100
+                "Description",
+                value=plant.get("description") or "",
+                height=100,
             )
-            
-            LOCATION_OPTIONS = ["living-room", "kitchen", "balcony", "entryway"]
 
             current_location = plant.get("location")
             if current_location in LOCATION_OPTIONS:
@@ -461,10 +456,6 @@ elif st.session_state.page == "Plant Details":
             else:
                 new_last_showered = None
 
-
-
-
-
         else:
             st.subheader(plant["name"])
 
@@ -476,17 +467,17 @@ elif st.session_state.page == "Plant Details":
             if location:
                 st.write(f"**Location:** {location}")
 
-
-
             freq = plant.get("watering_frequency_days")
             st.write(
-                f"**Watering frequency:** {freq} days" if freq else "**Watering frequency:** not set"
+                f"**Watering frequency:** {freq} days"
+                if freq
+                else "**Watering frequency:** not set"
             )
 
             takes_shower = plant.get("takes_shower")
             if takes_shower:
                 st.write("**Takes showers:** yes")
-     
+
                 if last_showered_date:
                     st.write(f"**Last showered:** {last_showered_date}")
                 else:
@@ -499,10 +490,9 @@ elif st.session_state.page == "Plant Details":
                     st.warning(shower_status_label)
                 else:
                     st.info(shower_status_label)
-            
-            else: 
-                st.write("**Takes showers:** no")
 
+            else:
+                st.write("**Takes showers:** no")
 
         st.write(f"**Last watered:** {plant.get('last_watered') or 'Never'}")
 
@@ -510,12 +500,12 @@ elif st.session_state.page == "Plant Details":
     with col2:
         photo_path = plant.get("photo_path")
         if photo_path:
-            # Construct public URL directly
             photo_url = f"{SUPABASE_URL}/storage/v1/object/public/{BUCKET}/{photo_path}"
-            st.image(photo_url, 
-                     width=400,          # target ~400x400 display size
-                    clamp=True,         # better contrast handling
-                    )
+            st.image(
+                photo_url,
+                width=400,
+                clamp=True,
+            )
         else:
             st.write("❌ No photo.")
 
@@ -533,7 +523,7 @@ elif st.session_state.page == "Plant Details":
         value=datetime.now().date(),
     )
 
-        # ----- Buttons row -----
+    # ----- Buttons row -----
     if mode == "view":
         # 3 buttons: Edit, Update watering date, Delete
         colA, colB, colC = st.columns(3)
@@ -564,16 +554,17 @@ elif st.session_state.page == "Plant Details":
                         except Exception:
                             pass
 
-                    supabase.table("plants").delete().eq("id", plant["id"]).execute()  # [web:332]
+                    supabase.table("plants").delete().eq(
+                        "id", plant["id"]
+                    ).execute()
                     st.success("Plant deleted.")
                     st.session_state.selected_id = None
                     st.session_state.mode = "view"
-                    st.session_state.page = "Overview"
                     st.session_state.confirm_delete = False
-                    st.rerun()
+                    go_overview()
 
     else:  # mode == "edit"
-            # 2 buttons: Save changes, Delete
+        # 2 buttons: Save changes, Delete
         colA, colB = st.columns(2)
 
         with colA:
@@ -584,7 +575,9 @@ elif st.session_state.page == "Plant Details":
                     "last_watered": str(new_date),
                     "watering_frequency_days": int(new_freq) if new_freq else None,
                     "takes_shower": new_takes_shower,
-                    "last_showered": str(new_last_showered) if new_last_showered else None,
+                    "last_showered": str(new_last_showered)
+                    if new_last_showered
+                    else None,
                     "location": new_location or None,
                 }
 
@@ -598,51 +591,51 @@ elif st.session_state.page == "Plant Details":
                     try:
                         file_bytes = new_file.getvalue()
                         res = supabase.storage.from_(BUCKET).upload(
-                            path=photo_path_new,           # note explicit keyword
-                            file=file_bytes,               # bytes to upload
-                            file_options={"upsert": "true"}, # allow overwrite if same name
+                            path=photo_path_new,
+                            file=file_bytes,
+                            file_options={"upsert": "true"},
                         )
                         updates["photo_path"] = photo_path_new
                     except Exception as e:
                         st.error(f"Photo upload failed: {e}")
-                        # optionally keep old photo_path by NOT setting updates["photo_path"]
 
                 try:
-                    supabase.table("plants").update(updates).eq("id", plant["id"]).execute()
+                    supabase.table("plants").update(updates).eq(
+                        "id", plant["id"]
+                    ).execute()
                     st.success("Changes saved!")
                     st.session_state.mode = "view"
                     st.rerun()
                 except Exception as e:
                     st.error(f"Error updating plant: {e}")
 
-            with colB:
-                if st.button("🗑 Delete", use_container_width=True):
-                    if "confirm_delete" not in st.session_state:
-                        st.session_state.confirm_delete = True
-                        st.warning("Click Delete again to confirm.")
-                    elif st.session_state.confirm_delete:
-                        photo_path = plant.get("photo_path")
-                        if photo_path:
-                            try:
-                                supabase.storage.from_(BUCKET).remove([photo_path])
-                            except Exception:
-                                pass
+        with colB:
+            if st.button("🗑 Delete", use_container_width=True):
+                if "confirm_delete" not in st.session_state:
+                    st.session_state.confirm_delete = True
+                    st.warning("Click Delete again to confirm.")
+                elif st.session_state.confirm_delete:
+                    photo_path = plant.get("photo_path")
+                    if photo_path:
+                        try:
+                            supabase.storage.from_(BUCKET).remove([photo_path])
+                        except Exception:
+                            pass
 
-                        supabase.table("plants").delete().eq("id", plant["id"]).execute()  # [web:332]
-                        st.success("Plant deleted.")
-                        st.session_state.selected_id = None
-                        st.session_state.mode = "view"
-                        st.session_state.page = "Overview"
-                        st.session_state.confirm_delete = False
-                        st.rerun()    
-
-
+                    supabase.table("plants").delete().eq(
+                        "id", plant["id"]
+                    ).execute()
+                    st.success("Plant deleted.")
+                    st.session_state.selected_id = None
+                    st.session_state.mode = "view"
+                    st.session_state.confirm_delete = False
+                    go_overview()
 
 
 #-----------------------------------------------------------------------------
 # ---------- FAQ ----------
 #-----------------------------------------------------------------------------
-elif st.session_state.page == "FAQ":
+elif page == "faq":
     st.header("❓ FAQ")
 
     with st.expander("1. How do I add a new plant?", expanded=False):
