@@ -583,6 +583,17 @@ elif page == "details":
                     st.session_state.confirm_delete = False
                     go_overview()
 
+
+        # ----- Bottom back button -----
+        bottom_col, _ = st.columns([1, 3])
+        with bottom_col:
+            if st.button("← Back to list", key="bottom_back_details", use_container_width=True):
+                st.session_state.selected_id = None
+                st.session_state.mode = "view"
+                go_overview()
+
+
+
     else:  # mode == "edit"
         # 2 buttons: Save changes, Delete
         colA, colB = st.columns(2)
@@ -769,7 +780,12 @@ You see this:
 """
         )
 
+    st.write("")  # small spacer
 
+    bottom_col, _ = st.columns([1, 3])
+    with bottom_col:
+        if st.button("← Back to list", key="bottom_back_faq", use_container_width=True):
+            go_overview()
 
 
 # Final safety: if for some reason no branch ran (e.g. query params weird on first load),
