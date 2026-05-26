@@ -23,8 +23,21 @@ BUCKET = "plant-photos"
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ---------- Navigation helpers (URL-based) ----------
+
 params = st.query_params
-page = params.get("page", ["overview"])[0]  # 'overview', 'add', 'details', 'faq'
+
+raw_page = params.get("page", "overview")
+# st.query_params sometimes returns a list-like; normalize to string
+if isinstance(raw_page, (list, tuple)):
+    page = raw_page[0] if raw_page else "overview"
+else:
+    page = raw_page
+
+# fallback if URL has unknown page value
+if page not in ("overview", "add", "details", "faq"):
+    page = "overview"
+
+
 
 
 def go_overview():
@@ -325,7 +338,14 @@ elif page == "details":
     st.header("📋 Plant Details")
 
     # Determine selected plant from URL or session
-    plant_id_str = params.get("plant_id", [None])[0]
+    
+    raw_pid = params.get("plant_id", None)
+    if isinstance(raw_pid, (list, tuple)):
+        plant_id_str = raw_pid[0] if raw_pid else None
+    else:
+        plant_id_str = raw_pid
+
+
     if plant_id_str is not None:
         try:
             st.session_state.selected_id = int(plant_id_str)
@@ -748,3 +768,11 @@ You see this:
 - Click the **←** arrow at the top-left to return to the Overview list.
 """
         )
+
+
+
+
+# Final safety: if for some reason no branch ran (e.g. query params weird on first load),
+# ensure we at least show the Overview.
+else:
+    go_overview()
