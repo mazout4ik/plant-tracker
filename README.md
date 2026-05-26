@@ -1,6 +1,6 @@
 The app itself is in Python with Streamlit as the front and Supabase as the back
 
-Here’s a concise FAQ you for this app.
+Here’s a concise FAQ for this app.
 
 ***
 ## Plant Tracker – FAQ
